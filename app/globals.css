@@ -1,0 +1,1435 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   THE CRYSTAL INTERIORS
+   Palette pulled from the opening film: lit plaster (cream), the hall's
+   walnut ceiling (wood), window light (glow), the dusk sky (dusk) and a
+   sindoor red for the one action that matters (red).
+   ========================================================================== */
+:root {
+  --cream: #f5efe6;
+  --shell: #fbf8f3;
+  --sand: #ece1d1;
+  --stone: #cdbba2;
+  --stone-light: #f3ede3;
+  --wood: #8a5a3a;
+  --wood-deep: #3e2a1c;
+  --ink: #211a14;
+  --muted: #6c6153;
+  --glow: #e9b872;
+  --dusk: #1b2638;
+  --dusk-soft: #26344a;
+  --red: #c53a2b;
+  --line: rgba(33, 26, 20, 0.14);
+
+  --gutter: clamp(1.25rem, 5vw, 5.5rem);
+  --radius-section: clamp(28px, 4vw, 48px);
+  --radius-card: 24px;
+  --radius-img: 18px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+::selection {
+  background: var(--glow);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 1rem;
+  z-index: 200;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  background: var(--shell);
+  color: var(--ink);
+  text-decoration: none;
+  transition: top 200ms var(--ease-out);
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ---- type -------------------------------------------------------------- */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wood);
+}
+.eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.eyebrow--light {
+  color: var(--glow);
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 4.4vw, 3.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.title em,
+.intro__title em,
+.booking__title em {
+  font-style: italic;
+  color: var(--wood);
+}
+.title--center {
+  text-align: center;
+}
+
+/* ---- buttons: rounded, with a soft drop shadow -------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3.1rem;
+  padding: 0 1.55rem;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    color 200ms var(--ease-out);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn__icon {
+  width: 1.05em;
+  height: 1.05em;
+}
+.btn--small {
+  min-height: 2.5rem;
+  padding: 0 1.15rem;
+  font-size: 0.875rem;
+}
+.btn--block {
+  width: 100%;
+  justify-content: center;
+}
+.btn--red {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 12px 26px -12px rgba(197, 58, 43, 0.75);
+}
+.btn--light {
+  background: var(--shell);
+  color: var(--ink);
+  box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.55);
+}
+.btn--gold {
+  background: var(--glow);
+  color: var(--ink);
+  box-shadow: 0 14px 30px -14px rgba(233, 184, 114, 0.8);
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--shell);
+  box-shadow: inset 0 0 0 1px rgba(251, 248, 243, 0.4);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn--red:hover {
+    background: #a93123;
+  }
+  .btn--light:hover,
+  .btn--gold:hover {
+    box-shadow: 0 20px 38px -14px rgba(0, 0, 0, 0.5);
+  }
+  .btn--ghost:hover {
+    box-shadow: inset 0 0 0 1px var(--glow);
+    color: var(--glow);
+  }
+}
+
+/* ---- logo -------------------------------------------------------------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.logo__mark {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+.logo__word {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 76px;
+  padding: 0 var(--gutter);
+  color: var(--shell);
+  background: linear-gradient(180deg, rgba(10, 14, 22, 0.45), rgba(10, 14, 22, 0));
+  transition:
+    background-color 300ms var(--ease-out),
+    color 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out);
+}
+.header--solid {
+  color: var(--ink);
+  background: rgba(245, 239, 230, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--line);
+}
+.header__brand {
+  color: inherit;
+  text-decoration: none;
+}
+.header__nav {
+  display: flex;
+  gap: clamp(1.25rem, 2.4vw, 2.25rem);
+}
+.header__link {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.925rem;
+  font-weight: 500;
+  opacity: 0.85;
+  transition: opacity 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .header__link:hover {
+    opacity: 1;
+  }
+}
+.header__end {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.header__menu {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.14);
+  color: inherit;
+  cursor: pointer;
+}
+.header--solid .header__menu {
+  background: rgba(33, 26, 20, 0.07);
+}
+.header__menu-bars {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  margin: 0 auto;
+  background: currentColor;
+  box-shadow: 0 -6px 0 currentColor, 0 6px 0 currentColor;
+}
+.header--open .header__menu-bars {
+  box-shadow: none;
+}
+.menu-sheet {
+  position: absolute;
+  top: 76px;
+  left: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem 1.5rem;
+  border-radius: var(--radius-card);
+  background: var(--shell);
+  color: var(--ink);
+  box-shadow: 0 30px 60px -24px rgba(33, 26, 20, 0.4);
+}
+.menu-sheet[hidden] {
+  display: none;
+}
+.menu-sheet__link {
+  padding: 0.7rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  font-family: var(--font-display), serif;
+  font-size: 1.6rem;
+}
+.menu-sheet .btn {
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   OPENING FILM
+   ========================================================================== */
+.hero {
+  position: relative;
+  background: var(--dusk);
+  color: var(--shell);
+}
+.hero__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  min-height: 34rem;
+  overflow: hidden;
+}
+/* With JS and motion allowed, the opening is a scroll runway set in CSS, so the
+   page never shifts when the film attaches: the stage stays on screen while
+   scrolling scrubs the film, and the intro rises over its final frames. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero {
+    height: calc(100svh + 260vh);
+  }
+  .js .intro {
+    margin-top: -26vh;
+  }
+  .js .hero__bar {
+    bottom: clamp(1.25rem, 4vh, 2.25rem);
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (max-aspect-ratio: 4/5) {
+  .js .hero {
+    height: calc(100svh + 210vh);
+  }
+}
+.hero__poster img,
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero__canvas {
+  opacity: 0;
+}
+.hero__canvas[data-ready="true"] {
+  opacity: 1;
+}
+.hero__shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(10, 14, 22, 0.35) 0%, rgba(10, 14, 22, 0) 28%),
+    linear-gradient(90deg, rgba(10, 14, 22, 0.62) 0%, rgba(10, 14, 22, 0.1) 55%, rgba(10, 14, 22, 0) 70%),
+    linear-gradient(0deg, rgba(10, 14, 22, 0.5) 0%, rgba(10, 14, 22, 0) 30%);
+}
+.hero__copy {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(7rem, 22vh, 13rem);
+  max-width: min(40rem, calc(100% - 2 * var(--gutter)));
+}
+.hero__title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6.4vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.hero__title em {
+  display: block;
+  font-style: italic;
+}
+.hero__lead {
+  margin: 1.25rem 0 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.25vw, 1.15rem);
+  color: rgba(251, 248, 243, 0.86);
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.hero__bar {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  /* clear of the intro sheet's rounded overlap (the film fades the bar before the sheet arrives) */
+  bottom: calc(var(--radius-section) + clamp(1rem, 3vh, 1.75rem));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+.hero__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(251, 248, 243, 0.88);
+}
+.hero__cue-ring {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(251, 248, 243, 0.45);
+}
+.hero__cue-ring svg {
+  width: 16px;
+  height: 16px;
+}
+.hero__explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.14);
+  backdrop-filter: blur(8px);
+  color: var(--shell);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   SHEETS — every section after the film rises with rounded top corners
+   ========================================================================== */
+.sheet,
+.section,
+.closing {
+  position: relative;
+  border-radius: var(--radius-section) var(--radius-section) 0 0;
+  margin-top: calc(-1 * var(--radius-section));
+}
+.section {
+  padding: calc(var(--radius-section) + clamp(3.5rem, 9vh, 6.5rem)) var(--gutter) clamp(5rem, 12vh, 8rem);
+}
+
+/* intro: slides up over the film's final frames (see .js .intro above) */
+.intro {
+  z-index: 2;
+  padding: clamp(3rem, 7vh, 4.5rem) var(--gutter) clamp(3rem, 8vh, 5rem);
+  background: var(--cream);
+  text-align: center;
+  box-shadow: 0 -30px 60px -30px rgba(10, 14, 22, 0.45);
+}
+.intro .eyebrow {
+  justify-content: center;
+}
+/* the logo's crystal: a still mark, which becomes a live 3D gem when it can */
+.intro__gem {
+  position: relative;
+  width: clamp(88px, 9vw, 128px);
+  aspect-ratio: 1;
+  margin: 0 auto 1.25rem;
+}
+.intro__gem::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(closest-side, rgba(233, 184, 114, 0.32), rgba(233, 184, 114, 0));
+  pointer-events: none;
+}
+.intro__gem-mark {
+  position: absolute;
+  inset: 22%;
+  width: 56%;
+  height: 56%;
+  color: var(--wood-deep);
+  transition:
+    opacity 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+.intro__gem-canvas {
+  position: absolute;
+  inset: -18%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms var(--ease-out);
+}
+.intro__gem[data-3d="ready"] .intro__gem-mark {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.intro__gem[data-3d="ready"] .intro__gem-canvas {
+  opacity: 1;
+}
+.intro__title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: clamp(2.8rem, 7vw, 5.75rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.intro__lead {
+  max-width: 44rem;
+  margin: 1.5rem auto 0;
+  font-family: var(--font-display), serif;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  line-height: 1.45;
+  color: var(--ink);
+}
+.intro__highlights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 4vw, 3.5rem);
+  margin: clamp(2.5rem, 6vh, 3.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.intro__highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.intro__icon {
+  width: 44px;
+  height: 44px;
+}
+
+/* what's included + booking */
+.included {
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 27rem);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+  margin-top: 0;
+  border-radius: 0;
+  background: var(--cream);
+  padding-top: clamp(3rem, 8vh, 5rem);
+}
+.services {
+  display: grid;
+  gap: 0.25rem;
+  margin: 2.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.service {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.service__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: var(--shell);
+  color: var(--wood);
+  box-shadow: 0 6px 16px -8px rgba(62, 42, 28, 0.35);
+}
+.service__icon svg {
+  width: 22px;
+  height: 22px;
+}
+.service__title {
+  margin: 0.15rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.service__body {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+}
+.included__book {
+  position: sticky;
+  top: 100px;
+}
+
+.booking {
+  padding: 1.75rem;
+  border-radius: var(--radius-card);
+  background: var(--shell);
+  box-shadow:
+    0 1px 0 var(--line),
+    0 30px 60px -28px rgba(62, 42, 28, 0.4);
+}
+.booking__title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.booking__lead {
+  margin: 0.5rem 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.booking__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(33, 26, 20, 0.3);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.booking__cell {
+  display: flex;
+  flex-direction: column;
+  padding: 0.6rem 0.9rem 0.65rem;
+  min-width: 0;
+}
+.booking__cell + .booking__cell {
+  border-left: 1px solid rgba(33, 26, 20, 0.3);
+}
+.booking__cell--wide {
+  grid-column: 1 / -1;
+  border-left: 0 !important;
+  border-top: 1px solid rgba(33, 26, 20, 0.3);
+}
+.booking__label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.booking__input {
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+}
+.booking__input:focus {
+  outline: none;
+}
+.booking__cell:focus-within {
+  box-shadow: inset 0 0 0 2px var(--ink);
+  border-radius: 12px;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+.stepper__value {
+  flex: 1;
+  font-size: 0.95rem;
+}
+.stepper__btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(33, 26, 20, 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out);
+}
+.stepper__btn:active {
+  transform: scale(0.94);
+}
+.stepper__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.stepper__btn svg {
+  width: 14px;
+  height: 14px;
+}
+.booking__contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.9rem 0 1.25rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.field__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.field__input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(33, 26, 20, 0.25);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+}
+.field__input:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: 0;
+}
+.booking__note {
+  margin: 0.9rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* collage */
+.collage-section {
+  z-index: 4;
+  background: var(--shell);
+}
+.collage-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+}
+.collage-section__note {
+  max-width: 24rem;
+  margin: 0;
+  color: var(--muted);
+}
+.collage {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: clamp(260px, 32vw, 470px) clamp(180px, 19vw, 290px);
+  gap: clamp(0.6rem, 1.2vw, 1rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.collage__item--0 {
+  grid-column: 1 / span 4;
+}
+.collage__item--1 {
+  grid-column: 5 / span 2;
+}
+.collage__item--2 {
+  grid-column: 1 / span 2;
+}
+.collage__item--3 {
+  grid-column: 3 / span 2;
+}
+.collage__item--4 {
+  grid-column: 5 / span 2;
+}
+.collage__button {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-img);
+  overflow: hidden;
+  background: var(--sand);
+  cursor: zoom-in;
+}
+.collage__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms var(--ease-out);
+}
+.collage__button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(10, 8, 6, 0.55), rgba(10, 8, 6, 0) 45%);
+}
+.collage__caption {
+  position: absolute;
+  left: 1rem;
+  bottom: 0.9rem;
+  z-index: 1;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+}
+.collage__expand {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.85);
+  color: var(--ink);
+}
+.collage__expand svg {
+  width: 15px;
+  height: 15px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .collage__button:hover .collage__img {
+    transform: scale(1.04);
+  }
+}
+
+/* lightbox (native dialog) — rounded, as asked */
+.lightbox {
+  width: fit-content;
+  max-width: 92vw;
+  max-height: 92vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+.lightbox::backdrop {
+  background: rgba(14, 11, 8, 0.82);
+  backdrop-filter: blur(6px);
+}
+@starting-style {
+  .lightbox[open] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.lightbox__figure {
+  margin: 0;
+}
+/* the image box hugs the photo, so the rounded corners sit on the photo itself */
+.lightbox__img {
+  width: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  margin: 0 auto;
+  border-radius: 20px;
+}
+.lightbox__caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  color: var(--shell);
+  font-weight: 600;
+}
+.lightbox__count {
+  opacity: 0.7;
+  font-weight: 500;
+}
+.lightbox__btn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.92);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+  transition: transform 160ms var(--ease-out);
+}
+.lightbox__btn:active {
+  transform: scale(0.94);
+}
+.lightbox__btn svg {
+  width: 20px;
+  height: 20px;
+}
+.lightbox__close {
+  top: -58px;
+  right: 0;
+}
+.lightbox__prev,
+.lightbox__next {
+  top: calc(50% - 40px);
+}
+.lightbox__prev {
+  left: -23px;
+}
+.lightbox__next {
+  right: -23px;
+}
+
+/* approach: a room that builds itself in 3D (Approach.tsx + three/Room.tsx) */
+.approach {
+  z-index: 5;
+  --build-bg: var(--sand);
+  --build-ink: var(--ink);
+  --build-muted: var(--muted);
+  --build-accent: var(--wood);
+  background: var(--build-bg);
+  color: var(--build-ink);
+}
+.approach .eyebrow,
+.approach .title em {
+  color: var(--build-accent);
+}
+
+/* still layout (reduced motion, no JS): the finished room, then the five steps */
+.build__stage {
+  display: grid;
+  gap: clamp(2rem, 5vh, 3rem);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+.build__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  order: -1;
+}
+.build__view {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: 28px;
+  background: var(--dusk);
+}
+.build__still {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.build__canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.build__steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.build__kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--build-accent);
+}
+.build__num {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.build__title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  line-height: 1.15;
+}
+.build__body {
+  margin: 0.5rem 0 0;
+  color: var(--build-muted);
+}
+.build__copy {
+  display: grid;
+  justify-items: center;
+  gap: clamp(2rem, 5vh, 3rem);
+}
+.build__rail {
+  display: none;
+}
+
+/* cinematic layout: the runway is set in CSS and the stage holds while the room builds */
+@media (prefers-reduced-motion: no-preference) {
+  .js .approach {
+    padding: 0;
+  }
+  .js .build {
+    height: calc(100svh + 320vh);
+  }
+  .js .build__stage {
+    position: sticky;
+    top: 0;
+    display: block;
+    max-width: none;
+    height: 100vh;
+    height: 100svh;
+    min-height: 36rem;
+    overflow: hidden;
+  }
+  .js .build__view {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: none;
+  }
+  .js .build__still {
+    display: none;
+  }
+  .js .build__stage[data-3d="off"] .build__still {
+    display: block;
+  }
+  .js .build__canvas {
+    /* framing for the 3D camera: the room sits right of the words */
+    --room-shift-x: 0.14;
+    --room-shift-y: 0;
+    opacity: 0;
+    transition: opacity 700ms var(--ease-out);
+  }
+  .js .build__stage[data-3d="ready"] .build__canvas {
+    opacity: 1;
+  }
+  .js .build__head {
+    position: absolute;
+    z-index: 1;
+    top: calc(72px + clamp(1.5rem, 7vh, 4rem));
+    left: var(--gutter);
+    width: min(28rem, 36vw);
+    align-items: flex-start;
+    text-align: left;
+  }
+  .js .build__copy {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: var(--gutter);
+    display: block;
+    width: min(24rem, 32vw);
+    transform: translateY(-20%);
+  }
+  .js .build__steps {
+    grid-template-columns: 1fr;
+  }
+  .js .build__step {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 220ms ease,
+      transform 220ms ease;
+  }
+  .js .build__step[data-current] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 480ms var(--ease-out) 120ms,
+      transform 480ms var(--ease-out) 120ms;
+  }
+  .js .build__rail {
+    position: absolute;
+    z-index: 1;
+    left: var(--gutter);
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    display: flex;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .js .build__tick {
+    position: relative;
+    width: clamp(3.5rem, 7vw, 6rem);
+    padding-top: 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--build-muted);
+    transition: color 300ms ease;
+  }
+  .js .build__tick::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.3;
+    transition: opacity 300ms ease;
+  }
+  .js .build__tick[data-current] {
+    color: var(--build-ink);
+  }
+  .js .build__tick[data-current]::before {
+    background: var(--build-accent);
+    opacity: 1;
+  }
+  .js .build__cta {
+    margin-top: 1.75rem;
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
+/* reviews + moving image */
+.reviews {
+  z-index: 6;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: stretch;
+  background: var(--cream);
+}
+.quotes {
+  display: grid;
+  gap: 1.75rem;
+  margin: 2.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.quote__stars {
+  display: inline-flex;
+  gap: 0.15rem;
+  color: var(--glow);
+}
+.quote__star {
+  width: 16px;
+  height: 16px;
+}
+.quote__text {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-display), serif;
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  line-height: 1.45;
+}
+.quote__by {
+  margin: 0.6rem 0 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.quote__by span {
+  margin-left: 0.4rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.reviews__media {
+  position: relative;
+  min-height: 28rem;
+  border-radius: 28px;
+  overflow: hidden;
+  /* the film melts into the reviews on its left edge */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 26%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 26%);
+}
+.reviews__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* closing + footer */
+.closing {
+  z-index: 7;
+  background: var(--dusk);
+  color: var(--shell);
+}
+.closing__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: calc(var(--radius-section) + clamp(3.5rem, 10vh, 7rem)) var(--gutter) clamp(3.5rem, 9vh, 6rem);
+  text-align: center;
+}
+.closing__title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: 1.03;
+  letter-spacing: -0.015em;
+}
+.closing__title em {
+  font-style: italic;
+  color: var(--glow);
+}
+.closing__lead {
+  max-width: 34rem;
+  margin: 1.25rem 0 0;
+  color: rgba(251, 248, 243, 0.82);
+}
+.closing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.25rem;
+}
+.site-footer {
+  position: relative;
+  z-index: 7;
+  background: var(--dusk);
+  color: var(--shell);
+}
+.footer {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vh, 4rem) var(--gutter) 2rem;
+  border-top: 1px solid rgba(251, 248, 243, 0.14);
+}
+.footer__brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.footer__brand p {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: rgba(251, 248, 243, 0.8);
+}
+.logo--light {
+  color: var(--shell);
+}
+.footer__cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+}
+.footer__label {
+  margin: 0 0 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--glow);
+}
+.footer__line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.45rem;
+  color: rgba(251, 248, 243, 0.86);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.footer__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+.footer__base {
+  margin: 2.5rem 0 0;
+  font-size: 0.82rem;
+  color: rgba(251, 248, 243, 0.55);
+}
+@media (hover: hover) and (pointer: fine) {
+  a.footer__line:hover {
+    color: var(--glow);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 960px) {
+  .header__nav {
+    display: none;
+  }
+  .header__menu {
+    display: grid;
+    place-items: center;
+  }
+  .included,
+  .reviews {
+    grid-template-columns: 1fr;
+  }
+  .included__book {
+    position: relative;
+    top: 0;
+  }
+  .reviews__media {
+    min-height: 22rem;
+    order: -1;
+    -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 30%);
+    mask-image: linear-gradient(0deg, transparent 0%, #000 30%);
+  }
+  .build__steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .footer__cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .header__cta {
+    display: none;
+  }
+  .logo__word {
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+  }
+  .hero__copy {
+    bottom: clamp(6.5rem, 18vh, 9rem);
+  }
+  .hero__explore {
+    display: none;
+  }
+  .collage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 16rem 11rem 11rem;
+  }
+  .collage__item--0 {
+    grid-column: 1 / -1;
+  }
+  .collage__item--1,
+  .collage__item--2,
+  .collage__item--3,
+  .collage__item--4 {
+    grid-column: auto;
+  }
+  .booking__contact {
+    grid-template-columns: 1fr;
+  }
+  .lightbox__prev {
+    left: 6px;
+  }
+  .lightbox__next {
+    right: 6px;
+  }
+  .build__steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* the 3D room on phones: words at the top and in a card below, the room between */
+@media (prefers-reduced-motion: no-preference) and (max-width: 760px) {
+  .js .build {
+    height: calc(100svh + 280vh);
+  }
+  .js .build__canvas {
+    --room-shift-x: 0;
+    --room-shift-y: 0.08;
+  }
+  .js .build__head {
+    top: calc(64px + 1rem);
+    right: var(--gutter);
+    width: auto;
+  }
+  .js .build__head .title {
+    font-size: clamp(1.7rem, 7.5vw, 2.3rem);
+  }
+  .js .build__copy {
+    top: auto;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    transform: none;
+  }
+  .js .build__steps {
+    padding: 1rem 1.15rem 1.1rem;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--build-bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .js .build__body {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .js .build__cta {
+    width: 100%;
+    margin-top: 0.75rem;
+    justify-content: center;
+  }
+  .js .build__rail {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION — the film becomes a still; nothing moves unasked.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .collage__img,
+  .lightbox {
+    transition: none;
+  }
+}

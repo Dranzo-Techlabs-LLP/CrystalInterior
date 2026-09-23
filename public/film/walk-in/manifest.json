@@ -1,0 +1,12 @@
+{
+  "desktop": {
+    "count": 150,
+    "width": 1600,
+    "height": 900
+  },
+  "mobile": {
+    "count": 100,
+    "width": 720,
+    "height": 1280
+  }
+}
