@@ -9,7 +9,7 @@ import { scrollToId } from "@/lib/scroll";
 import { hasWebGL, whenIdle } from "@/lib/webgl";
 import { Icon } from "./Icons";
 import { DecoBars } from "./Logo";
-import { ROOM_STEPS, room } from "./three/store";
+import { ROOM_STEPS, afterScene, room, sceneReady } from "./three/store";
 
 const loadRoom = () => import("./three/Room");
 const Room = dynamic(loadRoom, { ssr: false });
@@ -39,22 +39,28 @@ export function Approach() {
   const [ready, setReady] = useState(false);
 
   // As soon as the page settles, fetch the 3D code and paint its surfaces in idle
-  // moments; mount the room three screens ahead, so it is ready when it's reached.
+  // moments, then set the room up offscreen once the moodboard is drawing; if the
+  // visitor heads here first, it is set up as soon as they are three screens away.
   useEffect(() => {
     if (reduced || !webgl || !section.current) return;
     let cancelPaint: (() => void) | undefined;
+    let cancelMount: (() => void) | undefined;
     let alive = true;
+    const mount = () => {
+      if (cancelMount) return;
+      cancelMount = whenIdle(() => setLive(true), 300);
+    };
     const cancelPrefetch = whenIdle(() => {
       loadRoom().then((m) => {
         if (alive) cancelPaint = m.prepare();
       });
-    }, 2000);
-    let cancelMount: (() => void) | undefined;
+    }, 1500);
+    const stopWaiting = afterScene("board", mount);
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
-        cancelMount = whenIdle(() => setLive(true), 300);
+        mount();
       },
       { rootMargin: "300% 0px" },
     );
@@ -64,6 +70,7 @@ export function Approach() {
       cancelPrefetch();
       cancelPaint?.();
       cancelMount?.();
+      stopWaiting();
       io.disconnect();
     };
   }, [reduced, webgl]);
@@ -92,7 +99,7 @@ export function Approach() {
             trigger: runwayEl,
             start: "top top",
             end: () => `+=${Math.max(1, runwayEl.offsetHeight - stageEl.offsetHeight)}`,
-            scrub: 0.6,
+            scrub: 0.35,
             invalidateOnRefresh: true,
           },
         });
@@ -151,7 +158,12 @@ export function Approach() {
             />
             {live && (
               <div className="build__canvas" aria-hidden>
-                <Room onReady={() => setReady(true)} />
+                <Room
+                  onReady={() => {
+                    setReady(true);
+                    sceneReady("room");
+                  }}
+                />
               </div>
             )}
           </div>

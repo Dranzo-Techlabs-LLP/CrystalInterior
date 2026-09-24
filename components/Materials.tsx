@@ -9,7 +9,7 @@ import { scrollToId } from "@/lib/scroll";
 import { hasWebGL, whenIdle } from "@/lib/webgl";
 import { Icon } from "./Icons";
 import { DecoBars } from "./Logo";
-import { board, landing } from "./three/store";
+import { afterScene, board, landing, sceneReady } from "./three/store";
 
 const loadBoard = () => import("./three/Materials");
 const Board = dynamic(loadBoard, { ssr: false });
@@ -41,22 +41,28 @@ export function Materials() {
   const [ready, setReady] = useState(false);
 
   // As soon as the page settles, fetch the 3D code and paint its surfaces in idle
-  // moments; mount the scene three screens ahead, so it is ready when it's reached.
+  // moments, then set the scene up offscreen once the crystal is drawing; if the
+  // visitor heads here first, it is set up as soon as they are three screens away.
   useEffect(() => {
     if (reduced || !webgl || !section.current) return;
     let cancelPaint: (() => void) | undefined;
+    let cancelMount: (() => void) | undefined;
     let alive = true;
+    const mount = () => {
+      if (cancelMount) return;
+      cancelMount = whenIdle(() => setLive(true), 300);
+    };
     const cancelPrefetch = whenIdle(() => {
       loadBoard().then((m) => {
         if (alive) cancelPaint = m.prepare();
       });
     }, 1200);
-    let cancelMount: (() => void) | undefined;
+    const stopWaiting = afterScene("gem", mount);
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
-        cancelMount = whenIdle(() => setLive(true), 300);
+        mount();
       },
       { rootMargin: "300% 0px" },
     );
@@ -66,6 +72,7 @@ export function Materials() {
       cancelPrefetch();
       cancelPaint?.();
       cancelMount?.();
+      stopWaiting();
       io.disconnect();
     };
   }, [reduced, webgl]);
@@ -109,7 +116,7 @@ export function Materials() {
             trigger: runwayEl,
             start: "top top",
             end: () => `+=${Math.max(1, runwayEl.offsetHeight - stageEl.offsetHeight)}`,
-            scrub: 0.6,
+            scrub: 0.35,
             invalidateOnRefresh: true,
           },
         });
@@ -179,7 +186,12 @@ export function Materials() {
             />
             {live && (
               <div className="mats__canvas" aria-hidden>
-                <Board onReady={() => setReady(true)} />
+                <Board
+                  onReady={() => {
+                    setReady(true);
+                    sceneReady("board");
+                  }}
+                />
               </div>
             )}
           </div>

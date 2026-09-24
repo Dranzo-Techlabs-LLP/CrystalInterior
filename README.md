@@ -261,14 +261,20 @@ intro scrolls past and leans toward the pointer.
   paint a visitor sees is the finished hero. It plays once per visit.
 - The 3D code is fetched as soon as the page settles, and each scene's surfaces
   are painted ahead of time, one per idle moment (`prepareTextures` in
-  `three/textures.ts`). Each scene mounts about three screens before it is
-  reached and uploads its textures and compiles its shaders offscreen, so it is
-  already drawing on arrival. If a visitor gets there first (a jump from the
-  menu straight after loading), the scene's first frame stands in as a still
-  (`public/three/*-air*.jpg`, `room-plan*.jpg`) and the live scene fades in
-  over it. Scenes render on demand, and the moodboard draws continuously only
-  while its samples float on screen. Canvases are capped at 1.5× (room) and
-  1.75× (moodboard) pixel density.
+  `three/textures.ts`). The scenes then warm up offscreen one after another
+  (the crystal, then the moodboard, then the room: `afterScene`/`sceneReady` in
+  `three/store.ts`), uploading textures and compiling shaders before their
+  first frame, so each is drawing long before the visitor scrolls to it. A
+  scene the visitor heads for first is set up when they are three screens away,
+  and until it draws, its first frame stands in as a still
+  (`public/three/*-air*.jpg`, `room-plan*.jpg`).
+- The room's cove lighting is a soft additive wash in front of the walls, not
+  area lights: area lights made every surface's shader much heavier to compile
+  and to draw.
+- Scenes render on demand, and the moodboard draws continuously only while its
+  samples float on screen. Canvases are capped at 1.5× (room; 1.25× on phones)
+  and 1.75× (moodboard) pixel density. Scroll-driven scenes follow the scroll
+  closely (a short scrub on top of Lenis's smoothing).
 - The film frames are 9.5 MB (desktop) or 3.9 MB (mobile) of WebP. They load
   after the poster, which is preloaded.
 - The earlier cream version measured LCP 0.56–0.74 s, CLS ≤ 0.001 and 60 fps

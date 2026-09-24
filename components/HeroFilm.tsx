@@ -185,7 +185,7 @@ export function HeroFilm() {
               trigger: section,
               start: "top top",
               end: () => `+=${Math.max(1, section.offsetHeight - stage.offsetHeight)}`,
-              scrub: 0.5,
+              scrub: 0.3,
               invalidateOnRefresh: true,
             },
           });

@@ -15,7 +15,6 @@ import {
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import "./console";
 import { reveal, withReveal } from "./reveal";
 import { room } from "./store";
@@ -23,8 +22,6 @@ import { createTextures, labelTexture, prepareTextures } from "./textures";
 
 /** Paint the room's surfaces ahead of time (called once the code has been fetched). */
 export const prepare = () => prepareTextures("room");
-
-RectAreaLightUniformsLib.init();
 
 /*
  * A living room that builds itself as you scroll: a plan is sketched, walls and
@@ -351,16 +348,7 @@ function Lights() {
   const fill = useRef<THREE.DirectionalLight>(null!);
   const pendant = useRef<THREE.PointLight>(null!);
   const lamp = useRef<THREE.PointLight>(null!);
-  const niche = useRef<THREE.RectAreaLight>(null!);
-  const coveBack = useRef<THREE.RectAreaLight>(null!);
-  const coveLeft = useRef<THREE.RectAreaLight>(null!);
-
-  useLayoutEffect(() => {
-    niche.current.lookAt(JAALI.x, 1.1, 1.5);
-    // cove strips graze their walls from just below the ceiling line
-    coveBack.current.lookAt(0, 0, BACK - 0.25);
-    coveLeft.current.lookAt(LEFT - 0.25, 0, 0);
-  }, []);
+  const niche = useRef<THREE.PointLight>(null!);
 
   useFrame(() => {
     const l = lighting(room.p);
@@ -372,10 +360,8 @@ function Lights() {
     fill.current.intensity = lerp(0.35, 0.06, l.night);
     scene.environmentIntensity = lerp(0.5, 0.14, l.night);
     k.sky.uniforms.uNight.value = l.night;
-    coveBack.current.intensity = 4 * l.cove;
-    coveLeft.current.intensity = 4 * l.cove;
     k.cove.emissiveIntensity = 2.4 * l.cove;
-    niche.current.intensity = 5 * l.jaali;
+    niche.current.intensity = 2.2 * l.jaali;
     k.niche.emissiveIntensity = 2.4 * l.jaali;
     pendant.current.intensity = 5 * l.pendant;
     k.bulb.emissiveIntensity = 2.6 * l.pendant;
@@ -402,17 +388,55 @@ function Lights() {
       <directionalLight ref={fill} position={[7, 5, 8]} />
       <pointLight ref={pendant} position={[TABLE.x, 1.8, TABLE.z]} decay={2} color="#ffc58a" intensity={0} />
       <pointLight ref={lamp} position={[LAMP.x, 1.46, LAMP.z]} decay={2} color="#ffcf94" intensity={0} />
-      <rectAreaLight
-        ref={niche}
-        position={[JAALI.x, JAALI.y + JAALI.h / 2, BACK + 0.08]}
-        width={JAALI.w}
-        height={JAALI.h}
-        color="#ffc98a"
-        intensity={0}
-      />
-      <rectAreaLight ref={coveBack} position={[(RIGHT + LEFT) / 2, H - 0.08, BACK + 0.05]} width={6} height={0.1} color="#ffd9a3" intensity={0} />
-      <rectAreaLight ref={coveLeft} position={[LEFT + 0.05, H - 0.08, 0]} width={4.5} height={0.1} color="#ffd9a3" intensity={0} />
+      {/* the jaali niche spills warm light onto the sideboard and the floor */}
+      <pointLight ref={niche} position={[JAALI.x, JAALI.y + JAALI.h / 2, BACK + 0.45]} decay={2} color="#ffc98a" intensity={0} />
+      <CoveWash />
       <Glows />
+    </>
+  );
+}
+
+/**
+ * The cove light washing down the walls in the evening: a soft additive glow
+ * just in front of each wall. (Real area lights looked the same but made every
+ * surface's shader far heavier to compile and to draw, so the room was slow to
+ * appear and to scroll on phones.)
+ */
+function CoveWash() {
+  const k = useKit();
+  const material = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: "#ffd6a0",
+        alphaMap: k.tex.wash,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+      }),
+    [k],
+  );
+  useEffect(() => () => material.dispose(), [material]);
+  useFrame(() => {
+    material.opacity = 0.5 * lighting(room.p).cove;
+  });
+  const drop = 1.7;
+  const y = H - 0.03 - drop / 2;
+  return (
+    <>
+      {/* the back wall, either side of the window */}
+      <mesh geometry={k.plane} material={material} position={[(LEFT + WIN.x0) / 2, y, BACK + 0.008]} scale={[WIN.x0 - LEFT, drop, 1]} />
+      <mesh geometry={k.plane} material={material} position={[(WIN.x1 + RIGHT) / 2, y, BACK + 0.008]} scale={[RIGHT - WIN.x1, drop, 1]} />
+      {/* the left wall, glowing between the slats */}
+      <mesh
+        geometry={k.plane}
+        material={material}
+        position={[LEFT + 0.008, y, (BACK + FRONT) / 2]}
+        rotation={[0, Math.PI / 2, 0]}
+        scale={[FRONT - BACK, drop, 1]}
+      />
     </>
   );
 }
@@ -1125,10 +1149,12 @@ function Stage({ onReady }: { onReady?: () => void }) {
 }
 
 export default function Room({ onReady }: { onReady?: () => void }): ReactNode {
+  // phones draw at a slightly lower pixel density, which keeps scrolling smooth
+  const [dpr] = useState(() => (window.innerWidth < 760 ? 1.25 : 1.5));
   return (
     <Canvas
       shadows="percentage"
-      dpr={[1, 1.5]}
+      dpr={[1, dpr]}
       frameloop="demand"
       camera={{ fov: 30, near: 0.5, far: 100, position: [8, 14, 12] }}
       gl={{

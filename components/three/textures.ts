@@ -390,6 +390,21 @@ function cane(holes: boolean): Draw {
   };
 }
 
+/** A wall wash: bright under the cove at the top, falling off down the wall (an alpha map). */
+const wash: Draw = (g, _r, w, h) => {
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  [
+    [0, 255],
+    [0.06, 235],
+    [0.25, 140],
+    [0.5, 60],
+    [0.75, 18],
+    [1, 0],
+  ].forEach(([at, v]) => grad.addColorStop(at, `rgb(${v},${v},${v})`));
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+};
+
 /**
  * White in the middle fading to black, on an opaque canvas: an additive glow as
  * a colour map, a soft shadow as an alpha map (which reads colour, not alpha).
@@ -423,6 +438,7 @@ const ROOM = {
   marbleDark: { w: 512, h: 512, seed: 53, draw: marbleDark },
   marbleLight: { w: 512, h: 512, seed: 59, draw: marbleLight },
   glow: { w: 128, h: 128, seed: 1, draw: radial },
+  wash: { w: 8, h: 256, seed: 2, draw: wash },
 } satisfies Record<string, Recipe>;
 
 const BOARD = {
@@ -464,6 +480,9 @@ const surface = (set: keyof typeof SETS, key: string) =>
 /** Every surface in the room (three/Room.tsx). */
 export function createTextures() {
   const room = (key: keyof typeof ROOM) => surface("room", key);
+  const wash = texture(room("wash"), { color: false });
+  // a gradient: repeating would bleed its dark foot into its bright top edge
+  wash.wrapS = wash.wrapT = THREE.ClampToEdgeWrapping;
   return {
     walnut: texture(room("walnut")),
     floor: texture(room("floor"), { repeat: [2.5, 1.875] }),
@@ -476,6 +495,7 @@ export function createTextures() {
     marbleDark: texture(room("marbleDark")),
     marbleLight: texture(room("marbleLight")),
     glow: texture(room("glow"), { color: false }),
+    wash,
   };
 }
 

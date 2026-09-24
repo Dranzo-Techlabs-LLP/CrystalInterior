@@ -8,14 +8,14 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { hasWebGL, whenIdle } from "@/lib/webgl";
 import { CrystalMark, Icon } from "./Icons";
 import { DecoBars } from "./Logo";
-import { gem } from "./three/store";
+import { gem, sceneReady } from "./three/store";
 
 const Crystal = dynamic(() => import("./three/Crystal"), { ssr: false });
 
 const noSubscription = () => () => {};
 
 /**
- * The black sheet that slides up over the last frame of the opening film: the
+ * The navy sheet that slides up over the last frame of the opening film: the
  * studio's crystal, cut in the logo's yellow, turns in 3D as the page scrolls,
  * above the studio's promise, whose words light up as you read.
  */
@@ -77,7 +77,12 @@ export function Intro() {
         <CrystalMark className="intro__gem-mark" />
         {live && (
           <div className="intro__gem-canvas">
-            <Crystal onReady={() => setReady(true)} />
+            <Crystal
+              onReady={() => {
+                setReady(true);
+                sceneReady("gem");
+              }}
+            />
           </div>
         )}
       </div>
