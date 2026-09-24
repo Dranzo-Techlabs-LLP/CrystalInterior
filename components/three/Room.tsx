@@ -19,16 +19,20 @@ import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLigh
 import "./console";
 import { reveal, withReveal } from "./reveal";
 import { room } from "./store";
-import { createTextures, labelTexture } from "./textures";
+import { createTextures, labelTexture, prepareTextures } from "./textures";
+
+/** Paint the room's surfaces ahead of time (called once the code has been fetched). */
+export const prepare = () => prepareTextures("room");
 
 RectAreaLightUniformsLib.init();
 
 /*
  * A living room that builds itself as you scroll: a plan is sketched, walls and
- * joinery rise, furniture is set down in white clay, a sweep of light turns the
- * clay into walnut, travertine, linen and brass, day turns to evening as the
- * lamps come on, and finally the room is styled. The scene is a pure function
- * of scroll progress (`room.p`), so it plays backwards as well as forwards.
+ * joinery rise, furniture is set down in white clay, a sweep of the logo's
+ * yellow turns the clay into ebonised oak, marble, linen, brass and saffron
+ * velvet, day turns to evening as the lamps come on, and finally the room is
+ * styled. The scene is a pure function of scroll progress (`room.p`), so it
+ * plays backwards as well as forwards.
  */
 
 /* ---------------------------------------------------------------- timing --- */
@@ -86,36 +90,40 @@ function createKit() {
   const materials = {
     plinth: new THREE.MeshStandardMaterial({ color: "#f3eee6", roughness: 0.92 }),
     groundShadow: new THREE.MeshBasicMaterial({
-      color: "#20160f",
+      color: "#0b0b0c",
       alphaMap: tex.glow,
       transparent: true,
       opacity: 0.32,
       depthWrite: false,
     }),
-    line: new THREE.MeshBasicMaterial({ color: "#7a5337", transparent: true }),
+    line: new THREE.MeshBasicMaterial({ color: "#0b0b0c", transparent: true }),
     plaster: std({ map: tex.plaster, roughness: 0.95 }),
-    cap: std({ color: "#3e2a1c", roughness: 0.6 }),
+    cap: std({ color: "#0b0b0c", roughness: 0.6 }),
     floor: std({ map: tex.floor, roughness: 0.5 }),
-    walnut: std({ map: tex.walnut, roughness: 0.5 }),
-    walnutDeep: std({ color: "#8c7262", map: tex.walnut, roughness: 0.55 }),
-    stone: std({ map: tex.slab, roughness: 0.35 }),
+    /** ebonised oak: the walnut grain stained almost black (the slats echo the logo's bars) */
+    ebony: std({ color: "#3a3531", map: tex.walnut, roughness: 0.42 }),
+    ebonyDeep: std({ color: "#2a2623", map: tex.walnut, roughness: 0.5 }),
+    lacquer: std({ color: "#121213", roughness: 0.3 }),
+    marquina: std({ map: tex.marbleDark, roughness: 0.16 }),
+    calacatta: std({ map: tex.marbleLight, roughness: 0.2 }),
     linen: std({ color: "#f6f1e8", map: tex.linen, roughness: 0.95 }),
-    boucle: std({ color: "#fffaf2", map: tex.linen, roughness: 1 }),
     rug: std({ map: tex.rug, roughness: 1 }),
-    brass: std({ color: "#c99f64", metalness: 1, roughness: 0.3 }),
-    brassInside: std({ color: "#c99f64", metalness: 1, roughness: 0.3, side: THREE.DoubleSide }),
-    bronze: std({ color: "#3b3029", metalness: 0.6, roughness: 0.45 }),
-    ochre: std({ color: "#d39c5c", map: tex.linen, roughness: 0.9 }),
-    velvet: std({ color: "#6d4632", roughness: 0.7 }),
-    glaze: std({ color: "#2f3f58", roughness: 0.25, side: THREE.DoubleSide }),
+    brass: std({ color: "#d4ad66", metalness: 1, roughness: 0.28 }),
+    brassInside: std({ color: "#d4ad66", metalness: 1, roughness: 0.28, side: THREE.DoubleSide }),
+    steel: std({ color: "#18181a", metalness: 0.7, roughness: 0.4 }),
+    /** the brand's saffron, as velvet */
+    velvet: std({ color: "#f2b705", roughness: 0.78 }),
+    velvetBlack: std({ color: "#1b1b1d", roughness: 0.75 }),
+    glaze: std({ color: "#141416", roughness: 0.18, side: THREE.DoubleSide }),
     pot: std({ color: "#cdbca2", map: tex.slab, roughness: 0.85 }),
     soil: std({ color: "#3b2c21", roughness: 1 }),
     leaf: std({ color: "#76835a", roughness: 0.75, flatShading: true }),
     leafDeep: std({ color: "#58653f", roughness: 0.75, flatShading: true }),
     paper: std({ color: "#efe7da", roughness: 0.9 }),
-    bookBlue: std({ color: "#34445c", roughness: 0.8 }),
+    bookYellow: std({ color: "#ffcb04", roughness: 0.8 }),
+    bookBlack: std({ color: "#1a1a1c", roughness: 0.8 }),
     art: std({ map: tex.art, roughness: 0.92 }),
-    jaali: std({ map: tex.walnut, alphaMap: tex.lattice, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }),
+    jaali: std({ color: "#4a4440", map: tex.walnut, alphaMap: tex.lattice, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.55 }),
     niche: std({ color: "#efe6d8", emissive: "#ffc27c", emissiveIntensity: 0, roughness: 0.9 }),
     shade: std({
       color: "#f4ece0",
@@ -229,7 +237,7 @@ function Blob({ x, z, w, d, rot = 0, from, to, strength = 0.42 }: { x: number; z
   const material = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: "#1d140d",
+        color: "#0b0b0c",
         alphaMap: k.tex.glow,
         transparent: true,
         opacity: 0,
@@ -645,12 +653,12 @@ function Window() {
   return (
     <>
       <mesh geometry={k.plane} material={k.sky} position={[cx, cy, z - 0.02]} scale={[w, h, 1]} />
-      <Solid geo={k.box(bar, h, 0.07, 0.01)} mat={k.bronze} at={[WIN.x0 + bar / 2, cy, z]} />
-      <Solid geo={k.box(bar, h, 0.07, 0.01)} mat={k.bronze} at={[WIN.x1 - bar / 2, cy, z]} />
-      <Solid geo={k.box(w, bar, 0.07, 0.01)} mat={k.bronze} at={[cx, WIN.y1 - bar / 2, z]} />
-      <Solid geo={k.box(w, bar, 0.07, 0.01)} mat={k.bronze} at={[cx, WIN.y0 + bar / 2, z]} />
-      <Solid geo={k.box(0.035, h, 0.055, 0.008)} mat={k.bronze} at={[cx, cy, z]} />
-      <Solid geo={k.box(w, 0.035, 0.055, 0.008)} mat={k.bronze} at={[cx, 2.02, z]} />
+      <Solid geo={k.box(bar, h, 0.07, 0.01)} mat={k.steel} at={[WIN.x0 + bar / 2, cy, z]} />
+      <Solid geo={k.box(bar, h, 0.07, 0.01)} mat={k.steel} at={[WIN.x1 - bar / 2, cy, z]} />
+      <Solid geo={k.box(w, bar, 0.07, 0.01)} mat={k.steel} at={[cx, WIN.y1 - bar / 2, z]} />
+      <Solid geo={k.box(w, bar, 0.07, 0.01)} mat={k.steel} at={[cx, WIN.y0 + bar / 2, z]} />
+      <Solid geo={k.box(0.035, h, 0.055, 0.008)} mat={k.steel} at={[cx, cy, z]} />
+      <Solid geo={k.box(w, 0.035, 0.055, 0.008)} mat={k.steel} at={[cx, 2.02, z]} />
     </>
   );
 }
@@ -682,7 +690,7 @@ function Slats() {
   return (
     <instancedMesh
       ref={mesh}
-      args={[k.box(0.045, 1, 0.075, 0.012), k.walnut, count]}
+      args={[k.box(0.045, 1, 0.075, 0.012), k.ebony, count]}
       castShadow
       receiveShadow
       frustumCulled={false}
@@ -700,15 +708,15 @@ function Jaali() {
     <group ref={g} position={[0, JAALI.y, 0]}>
       <mesh geometry={k.plane} material={k.niche} position={[x, h / 2, BACK + 0.004]} scale={[w, h, 1]} />
       <mesh geometry={k.plane} material={k.jaali} position={[x, h / 2, BACK + 0.06]} scale={[w - 0.04, h - 0.04, 1]} castShadow />
-      <Solid geo={k.box(w + 0.1, 0.05, 0.09, 0.01)} mat={k.walnut} at={[x, h + 0.025, BACK + 0.045]} />
-      <Solid geo={k.box(w + 0.1, 0.05, 0.09, 0.01)} mat={k.walnut} at={[x, -0.025, BACK + 0.045]} />
-      <Solid geo={k.box(0.05, h, 0.09, 0.01)} mat={k.walnut} at={[x - w / 2 - 0.025, h / 2, BACK + 0.045]} />
-      <Solid geo={k.box(0.05, h, 0.09, 0.01)} mat={k.walnut} at={[x + w / 2 + 0.025, h / 2, BACK + 0.045]} />
+      <Solid geo={k.box(w + 0.1, 0.05, 0.09, 0.01)} mat={k.brass} at={[x, h + 0.025, BACK + 0.045]} />
+      <Solid geo={k.box(w + 0.1, 0.05, 0.09, 0.01)} mat={k.brass} at={[x, -0.025, BACK + 0.045]} />
+      <Solid geo={k.box(0.05, h, 0.09, 0.01)} mat={k.brass} at={[x - w / 2 - 0.025, h / 2, BACK + 0.045]} />
+      <Solid geo={k.box(0.05, h, 0.09, 0.01)} mat={k.brass} at={[x + w / 2 + 0.025, h / 2, BACK + 0.045]} />
     </group>
   );
 }
 
-/** A built-in walnut sideboard that slides out of the wall. */
+/** A built-in sideboard in black lacquer with a Calacatta top, sliding out of the wall. */
 function Sideboard() {
   const k = useKit();
   const g = useRef<THREE.Group>(null!);
@@ -721,11 +729,11 @@ function Sideboard() {
   const z = BACK + d / 2;
   return (
     <group ref={g}>
-      <Solid geo={k.box(w - 0.1, 0.08, d - 0.05, 0.01)} mat={k.walnutDeep} at={[x, 0.04, z - 0.01]} />
-      <Solid geo={k.box(w, 0.56, d, 0.02)} mat={k.walnut} at={[x, 0.36, z]} />
-      <Solid geo={k.box(w + 0.04, 0.035, d + 0.02, 0.01)} mat={k.stone} at={[x, 0.6575, z + 0.005]} />
+      <Solid geo={k.box(w - 0.1, 0.08, d - 0.05, 0.01)} mat={k.ebonyDeep} at={[x, 0.04, z - 0.01]} />
+      <Solid geo={k.box(w, 0.56, d, 0.02)} mat={k.lacquer} at={[x, 0.36, z]} />
+      <Solid geo={k.box(w + 0.04, 0.035, d + 0.02, 0.01)} mat={k.calacatta} at={[x, 0.6575, z + 0.005]} />
       {[-0.55, 0, 0.55].map((dx) => (
-        <mesh key={dx} geometry={k.box(0.006, 0.5, 0.006, 0.002)} material={k.walnutDeep} position={[x + dx, 0.36, z + d / 2 + 0.001]} />
+        <mesh key={dx} geometry={k.box(0.006, 0.5, 0.006, 0.002)} material={k.brass} position={[x + dx, 0.36, z + d / 2 + 0.001]} />
       ))}
       {[-0.825, -0.275, 0.275, 0.825].map((dx) => (
         <mesh key={dx} geometry={k.box(0.12, 0.012, 0.02, 0.005)} material={k.brass} position={[x + dx, 0.585, z + d / 2 + 0.01]} castShadow />
@@ -771,7 +779,7 @@ function Sofa() {
   return (
     <group position={[SOFA.x, 0, SOFA.z]}>
       <group ref={g}>
-        <Solid geo={k.box(0.8, 0.1, 2.3, 0.02)} mat={k.walnutDeep} at={[0.03, 0.05, 0]} />
+        <Solid geo={k.box(0.8, 0.1, 2.3, 0.02)} mat={k.ebonyDeep} at={[0.03, 0.05, 0]} />
         <Solid geo={k.box(0.95, 0.26, 2.5, 0.06)} mat={k.linen} at={[0, 0.23, 0]} />
         {[-0.7, 0, 0.7].map((z) => (
           <Solid key={`seat${z}`} geo={k.box(0.7, 0.14, 0.68, 0.06)} mat={k.linen} at={[0.1, 0.43, z]} />
@@ -794,14 +802,14 @@ function CoffeeTable() {
   return (
     <group position={[TABLE.x, 0, TABLE.z]}>
       <group ref={g}>
-        <Solid geo={k.cyl(0.34, 0.37, 0.3, 48)} mat={k.walnut} at={[0, 0.15, 0]} />
-        <Solid geo={k.cyl(0.58, 0.58, 0.045, 64)} mat={k.stone} at={[0, 0.3225, 0]} />
+        <Solid geo={k.cyl(0.34, 0.37, 0.3, 48)} mat={k.brass} at={[0, 0.15, 0]} />
+        <Solid geo={k.cyl(0.58, 0.58, 0.045, 64)} mat={k.marquina} at={[0, 0.3225, 0]} />
       </group>
     </group>
   );
 }
 
-/** A lounge chair in walnut and bouclé, facing the sofa across the table. */
+/** A lounge chair in ebonised oak and saffron velvet, facing the sofa across the table. */
 function Armchair() {
   const k = useKit();
   const g = useRef<THREE.Group>(null);
@@ -810,11 +818,11 @@ function Armchair() {
     <group position={[CHAIR.x, 0, CHAIR.z]} rotation={[0, CHAIR.rot, 0]}>
       <group ref={g}>
         {[-0.39, 0.39].map((z) => (
-          <Solid key={z} geo={k.box(0.8, 0.52, 0.05, 0.02)} mat={k.walnut} at={[0, 0.26, z]} />
+          <Solid key={z} geo={k.box(0.8, 0.52, 0.05, 0.02)} mat={k.ebony} at={[0, 0.26, z]} />
         ))}
-        <Solid geo={k.box(0.7, 0.13, 0.73, 0.05)} mat={k.boucle} at={[0.04, 0.33, 0]} />
-        <Solid geo={k.box(0.15, 0.55, 0.73, 0.06)} mat={k.boucle} at={[-0.3, 0.62, 0]} rot={[0, 0, 0.22]} />
-        <Solid geo={k.box(0.05, 0.05, 0.78, 0.015)} mat={k.walnut} at={[-0.36, 0.12, 0]} />
+        <Solid geo={k.box(0.7, 0.13, 0.73, 0.05)} mat={k.velvet} at={[0.04, 0.33, 0]} />
+        <Solid geo={k.box(0.15, 0.55, 0.73, 0.06)} mat={k.velvet} at={[-0.3, 0.62, 0]} rot={[0, 0, 0.22]} />
+        <Solid geo={k.box(0.05, 0.05, 0.78, 0.015)} mat={k.ebony} at={[-0.36, 0.12, 0]} />
       </group>
     </group>
   );
@@ -848,7 +856,7 @@ function Pendant() {
   return (
     <group position={[TABLE.x, 0, TABLE.z]}>
       <group ref={g}>
-        <mesh geometry={k.cyl(0.005, 0.005, 1.5, 8)} material={k.bronze} position={[0, 2.17 + 0.75, 0]} />
+        <mesh geometry={k.cyl(0.005, 0.005, 1.5, 8)} material={k.steel} position={[0, 2.17 + 0.75, 0]} />
         <mesh geometry={dome} material={k.brass} position={[0, 1.9, 0]} castShadow />
         <mesh geometry={dome} material={k.bulb} position={[0, 1.9, 0]} scale={0.97} />
       </group>
@@ -869,7 +877,7 @@ function Art() {
   });
   return (
     <group ref={g}>
-      <Solid geo={k.box(0.035, 0.98, 1.34, 0.01)} mat={k.walnutDeep} at={[LEFT + 0.1, 1.72, SOFA.z]} />
+      <Solid geo={k.box(0.035, 0.98, 1.34, 0.01)} mat={k.brass} at={[LEFT + 0.1, 1.72, SOFA.z]} />
       <mesh geometry={k.plane} material={k.art} position={[LEFT + 0.12, 1.72, SOFA.z]} rotation={[0, Math.PI / 2, 0]} scale={[1.26, 0.9, 1]} />
     </group>
   );
@@ -902,7 +910,7 @@ function Plant() {
       <group ref={g}>
         <Solid geo={k.cyl(0.21, 0.17, 0.44, 40)} mat={k.pot} at={[0, 0.22, 0]} />
         <mesh geometry={k.cyl(0.19, 0.19, 0.02, 32)} material={k.soil} position={[0, 0.43, 0]} />
-        <Solid geo={k.cyl(0.018, 0.028, 0.9, 10)} mat={k.walnutDeep} at={[0.02, 0.88, 0]} rot={[0.05, 0, -0.06]} />
+        <Solid geo={k.cyl(0.018, 0.028, 0.9, 10)} mat={k.ebonyDeep} at={[0.02, 0.88, 0]} rot={[0.05, 0, -0.06]} />
         {LEAVES.map(([x, y, z, r], i) => (
           <mesh
             key={i}
@@ -927,8 +935,8 @@ function Cushions() {
   return (
     <group position={[SOFA.x, 0, SOFA.z]}>
       <group ref={g}>
-        <Solid geo={k.box(0.14, 0.42, 0.42, 0.07)} mat={k.ochre} at={[-0.2, 0.72, -0.72]} rot={[0.12, 0.3, 0.3]} />
-        <Solid geo={k.box(0.14, 0.4, 0.4, 0.07)} mat={k.velvet} at={[-0.2, 0.71, 0.74]} rot={[-0.1, -0.25, 0.26]} />
+        <Solid geo={k.box(0.14, 0.42, 0.42, 0.07)} mat={k.velvet} at={[-0.2, 0.72, -0.72]} rot={[0.12, 0.3, 0.3]} />
+        <Solid geo={k.box(0.14, 0.4, 0.4, 0.07)} mat={k.velvetBlack} at={[-0.2, 0.71, 0.74]} rot={[-0.1, -0.25, 0.26]} />
       </group>
     </group>
   );
@@ -962,14 +970,14 @@ function TableStyling() {
     <group position={[TABLE.x, 0.345, TABLE.z]}>
       <group ref={g}>
         <Solid geo={k.box(0.28, 0.035, 0.21, 0.005)} mat={k.paper} at={[0.14, 0.0175, 0.14]} rot={[0, 0.3, 0]} />
-        <Solid geo={k.box(0.24, 0.03, 0.18, 0.005)} mat={k.bookBlue} at={[0.15, 0.05, 0.13]} rot={[0, 0.5, 0]} />
+        <Solid geo={k.box(0.24, 0.03, 0.18, 0.005)} mat={k.bookYellow} at={[0.15, 0.05, 0.13]} rot={[0, 0.5, 0]} />
         <mesh geometry={bowl} material={k.brassInside} position={[-0.2, 0, -0.14]} castShadow />
       </group>
     </group>
   );
 }
 
-/** A glazed vase with dried branches, books and a brass sphere on the sideboard. */
+/** A black glazed vase with dried branches, books and a brass sphere on the sideboard. */
 function SideboardStyling() {
   const k = useKit();
   const g = useRef<THREE.Group>(null);
@@ -988,14 +996,14 @@ function SideboardStyling() {
           <mesh
             key={i}
             geometry={k.cyl(0.004, 0.007, 0.75, 6)}
-            material={k.walnutDeep}
+            material={k.ebonyDeep}
             position={[SIDEBOARD.x - 0.7 + tiltZ * 0.2, 0.75, z + tiltX * 0.15]}
             rotation={[tiltX * 0.5, 0, -tiltZ * 0.5]}
             castShadow
           />
         ))}
         <Solid geo={k.box(0.3, 0.04, 0.22, 0.005)} mat={k.paper} at={[SIDEBOARD.x + 0.55, 0.02, z]} />
-        <Solid geo={k.box(0.26, 0.035, 0.2, 0.005)} mat={k.bookBlue} at={[SIDEBOARD.x + 0.55, 0.0575, z]} rot={[0, 0.2, 0]} />
+        <Solid geo={k.box(0.26, 0.035, 0.2, 0.005)} mat={k.bookBlack} at={[SIDEBOARD.x + 0.55, 0.0575, z]} rot={[0, 0.2, 0]} />
         <mesh geometry={k.shape("sphere", () => new THREE.SphereGeometry(0.075, 32, 16))} material={k.brass} position={[SIDEBOARD.x + 0.55, 0.15, z]} castShadow />
       </group>
     </group>
@@ -1076,9 +1084,11 @@ function Stage({ onReady }: { onReady?: () => void }) {
     };
   }, [gl, scene, invalidate]);
 
-  // Compile every shader before the first visible frame, so scrolling in never stutters.
+  // Upload every texture and compile every shader before the first visible frame
+  // (the room mounts well ahead of the section), so scrolling in never stutters.
   useEffect(() => {
     let live = true;
+    Object.values(kit.tex).forEach((t) => gl.initTexture(t));
     gl.compileAsync(scene, camera).then(() => {
       if (!live) return;
       root.current.visible = true;
@@ -1087,7 +1097,7 @@ function Stage({ onReady }: { onReady?: () => void }) {
     return () => {
       live = false;
     };
-  }, [gl, scene, camera, invalidate]);
+  }, [gl, scene, camera, invalidate, kit]);
 
   useFrame(() => {
     if (shown.current || !root.current.visible) return;

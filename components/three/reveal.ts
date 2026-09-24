@@ -2,14 +2,15 @@ import * as THREE from "three";
 
 /**
  * The "honest materials" moment: every surface starts as white clay, like an
- * architect's model, and a warm line sweeps across the room turning it into
- * walnut, travertine, linen and brass. One shared uniform drives every material.
+ * architect's model, and a line of the logo's yellow sweeps across the room
+ * turning it into oak, marble, linen, brass and velvet. One shared uniform
+ * drives every material.
  */
 export const reveal = {
   /** Sweep front: 0 = all clay, ~1.12 = every surface finished. */
   uReveal: { value: 0 },
   uClay: { value: new THREE.Color("#ece6dc") },
-  uEdge: { value: new THREE.Color("#ffdcae") },
+  uEdge: { value: new THREE.Color("#ffcb04") },
 };
 
 const SWEEP = /* glsl */ `
@@ -24,7 +25,7 @@ const SWEEP = /* glsl */ `
   float revealAmount() {
     return 1.0 - smoothstep(uReveal - 0.1, uReveal, sweepCoord());
   }
-  // a fine line of warm light riding just behind the sweep front
+  // a fine line of yellow light riding just behind the sweep front
   float revealEdge() {
     float s = sweepCoord();
     float band = smoothstep(uReveal - 0.06, uReveal - 0.035, s) * (1.0 - smoothstep(uReveal - 0.035, uReveal - 0.01, s));

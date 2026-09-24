@@ -8,34 +8,34 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // the brand palette (app/globals.css holds the same tokens)
       colors: {
+        yellow: {
+          DEFAULT: "var(--yellow)",
+          deep: "var(--yellow-deep)",
+          soft: "var(--yellow-soft)",
+        },
+        ink: "var(--ink)",
+        night: {
+          DEFAULT: "var(--night)",
+          2: "var(--night-2)",
+          3: "var(--night-3)",
+        },
         ivory: "var(--ivory)",
-        beige: "var(--beige)",
+        paper: "var(--paper)",
         sand: "var(--sand)",
-        clay: "var(--clay)",
-        walnut: {
-          DEFAULT: "var(--walnut)",
-          deep: "var(--walnut-deep)",
-        },
-        charcoal: {
-          DEFAULT: "var(--charcoal)",
-          soft: "var(--charcoal-soft)",
-        },
-        brass: {
-          DEFAULT: "var(--brass)",
-          bright: "var(--brass-bright)",
-        },
       },
       fontFamily: {
-        display: ["var(--font-display)", "Cormorant Garamond", "serif"],
+        display: ["var(--font-display)", "Didot", "serif"],
+        label: ["var(--font-label)", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       letterSpacing: {
-        label: "0.32em",
+        label: "0.3em",
         wide: "0.18em",
       },
       transitionTimingFunction: {
-        soft: "cubic-bezier(0.22, 1, 0.36, 1)",
+        soft: "cubic-bezier(0.23, 1, 0.32, 1)",
         gentle: "cubic-bezier(0.65, 0, 0.35, 1)",
       },
       screens: {

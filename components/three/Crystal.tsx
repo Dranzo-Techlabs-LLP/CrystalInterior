@@ -7,9 +7,10 @@ import "./console";
 import { gem } from "./store";
 
 /**
- * The studio's crystal, in 3D: a cut gem that refracts a warm interior light
- * and splits it into colour at the facets. It turns with the page's scroll and
- * leans toward the pointer (both driven from Intro.tsx through `gem`).
+ * The studio's crystal, in 3D: a citrine cut in the logo's yellow, refracting a
+ * warm studio light and splitting it into colour at the facets. It turns with
+ * the page's scroll and leans toward the pointer (both driven from Intro.tsx
+ * through `gem`).
  */
 
 /**
@@ -140,14 +141,14 @@ function random(seed: number) {
 }
 
 /**
- * What the gem sees, lit the way jewellery is photographed: a dark slate room
- * with a thin warm horizon and bright softboxes scattered all around, mostly
+ * What the gem sees, lit the way jewellery is photographed: a dark warm room
+ * with a thin golden horizon and bright softboxes scattered all around, mostly
  * above, so neighbouring facets flash between light and dark. Rendered once
  * into a cube map.
  */
 function renderStudio(gl: THREE.WebGLRenderer, target: THREE.WebGLCubeRenderTarget) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#6a7486");
+  scene.background = new THREE.Color("#6e5c3a");
   const disposables: { dispose(): void }[] = [];
   const add = (geometry: THREE.BufferGeometry, color: THREE.Color, side: THREE.Side = THREE.DoubleSide) => {
     const material = new THREE.MeshBasicMaterial({ color, side });
@@ -156,7 +157,7 @@ function renderStudio(gl: THREE.WebGLRenderer, target: THREE.WebGLCubeRenderTarg
     scene.add(mesh);
     return mesh;
   };
-  add(new THREE.CylinderGeometry(9, 9, 0.7, 64, 1, true), new THREE.Color("#e9b872").multiplyScalar(1.4), THREE.BackSide).position.y = 0.4;
+  add(new THREE.CylinderGeometry(9, 9, 0.7, 64, 1, true), new THREE.Color("#ffc83a").multiplyScalar(1.5), THREE.BackSide).position.y = 0.4;
   const overhead = add(new THREE.PlaneGeometry(7, 7), new THREE.Color("#fff8ee").multiplyScalar(3));
   overhead.position.set(0, 8, 0);
   overhead.lookAt(0, 0, 0);
@@ -166,7 +167,7 @@ function renderStudio(gl: THREE.WebGLRenderer, target: THREE.WebGLCubeRenderTarg
     const around = r() * Math.PI * 2;
     const flat = Math.sqrt(1 - y * y);
     const size = 1.2 + r() * 2.2;
-    const color = new THREE.Color(k % 5 === 0 ? "#ffc27a" : "#fff6ea").multiplyScalar(3 + r() * 5);
+    const color = new THREE.Color(k % 4 === 0 ? "#ffd24a" : "#fff8ec").multiplyScalar(3 + r() * 5);
     const box = add(new THREE.PlaneGeometry(size, size * (0.5 + r())), color);
     box.position.set(flat * Math.cos(around) * 8, y * 8, flat * Math.sin(around) * 8);
     box.lookAt(0, 0, 0);
@@ -190,7 +191,8 @@ function Gem({ onReady }: { onReady?: () => void }) {
         uRotation: { value: new THREE.Matrix3() },
         uIor: { value: 2.2 },
         uSpread: { value: 0.12 },
-        uTint: { value: new THREE.Color("#fff6ea") },
+        // citrine: the refracted light takes the brand's yellow, the reflections stay white
+        uTint: { value: new THREE.Color("#ffc21a") },
       },
       vertexShader,
       fragmentShader,

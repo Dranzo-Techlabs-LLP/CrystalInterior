@@ -2,9 +2,8 @@ import type { ReactElement, SVGProps } from "react";
 import type { IconName } from "@/data/home";
 
 /**
- * The studio's icon set, drawn by hand. Colours come from the opening film:
- * the amber of lit windows (--glow), walnut from the hall ceiling (--wood),
- * and the pale stone of the facade (--stone-light).
+ * The studio's icon set, drawn by hand on a 24px grid with a 1.5px line, so
+ * every icon shares one weight. Colour comes from currentColor.
  */
 
 type Props = SVGProps<SVGSVGElement> & { title?: string };
@@ -12,18 +11,22 @@ type Props = SVGProps<SVGSVGElement> & { title?: string };
 const a11y = (title?: string) =>
   title ? { role: "img" as const, "aria-label": title } : { "aria-hidden": true as const };
 
-/* ---------------------------------------------------------------- Logo --- */
+/* ------------------------------------------------------- Crystal mark --- */
 
+/**
+ * The crystal as a flat drawing, in the logo's yellow and black: shown in
+ * place of the live 3D gem (reduced motion, no WebGL) and while it loads.
+ */
 export function CrystalMark({ title, ...props }: Props) {
   return (
     <svg viewBox="0 0 32 32" fill="none" {...a11y(title)} {...props}>
-      <path d="M9 7h14l6 7H3z" fill="var(--glow)" />
-      <path d="M3 14h26L16 28z" fill="var(--wood)" />
-      <path d="M12.5 14 16 28l3.5-14z" fill="var(--glow)" opacity=".55" />
+      <path d="M9 7h14l6 7H3z" fill="#FFE27A" />
+      <path d="M3 14h26L16 28z" fill="#FFCB04" />
+      <path d="M12.5 14 16 28l3.5-14z" fill="#E6B400" />
       <path
         d="M9 7h14l6 7-13 14L3 14zM3 14h26M9 7l3.5 7L16 7l3.5 7L23 7M12.5 14 16 28l3.5-14"
-        stroke="currentColor"
-        strokeWidth="1.3"
+        stroke="#0B0B0C"
+        strokeWidth="1.1"
         strokeLinejoin="round"
       />
     </svg>
@@ -63,6 +66,13 @@ const LINE: Record<string, ReactElement> = {
     <>
       <circle cx="8" cy="15.5" r="4" />
       <path d="M11 12.5 19.5 4M16.2 7.3l2.4 2.4M13.9 9.6l1.9 1.9" />
+    </>
+  ),
+  home: (
+    <>
+      <path d="M3.5 11 12 4l8.5 7" />
+      <path d="M5.5 9.5V20h13V9.5" />
+      <path d="M10 20v-5.5h4V20" />
     </>
   ),
   arrowUpRight: <path d="M7 17 17 7M8.5 7H17v8.5" />,
@@ -114,82 +124,6 @@ export function Star(props: SVGProps<SVGSVGElement>) {
         d="m10 1.8 2.5 5.2 5.7.8-4.1 4 1 5.6L10 14.7l-5.1 2.7 1-5.6-4.1-4 5.7-.8z"
         fill="currentColor"
       />
-    </svg>
-  );
-}
-
-/* --------------------------------------------------- Illustrated icons --- */
-
-const S = "var(--wood-deep)";
-
-const ART: Record<string, ReactElement> = {
-  materials: (
-    <>
-      {/* brass, walnut, marble — stacked like samples on the studio table */}
-      <path d="M8 30l16 8v4L8 34z" fill="#B5843F" stroke={S} />
-      <path d="M24 38l16-8v4l-16 8z" fill="#C99A52" stroke={S} />
-      <path d="M24 22l16 8-16 8-16-8z" fill="var(--glow)" stroke={S} />
-      <path d="M8 22l16 8v4L8 26z" fill="#6B4630" stroke={S} />
-      <path d="M24 30l16-8v4l-16 8z" fill="#7F563B" stroke={S} />
-      <path d="M24 14l16 8-16 8-16-8z" fill="#A87A52" stroke={S} />
-      <path d="M8 14l16 8v4L8 18z" fill="#D8CEC0" stroke={S} />
-      <path d="M24 22l16-8v4l-16 8z" fill="#E6DED2" stroke={S} />
-      <path d="M24 6l16 8-16 8-16-8z" fill="#F6F1E9" stroke={S} />
-      <path d="M15 11c4 1 6 4 11 3.5M22 17c3-1 5 .5 8-1" stroke="#B9AD9C" strokeWidth=".9" fill="none" />
-    </>
-  ),
-  light: (
-    <>
-      <path d="M16 25 9 44h30l-7-19z" fill="var(--glow)" opacity=".32" />
-      <path d="M19 25 15 44h18l-4-19z" fill="var(--glow)" opacity=".4" />
-      <path d="M24 3v9" stroke={S} strokeWidth="1.4" />
-      <rect x="21.5" y="11" width="5" height="3.5" rx="1" fill={S} />
-      <path d="M12.5 25c0-6.6 5.1-11 11.5-11s11.5 4.4 11.5 11z" fill="var(--wood)" stroke={S} />
-      <circle cx="24" cy="26.5" r="3.2" fill="#FFE6BC" stroke={S} strokeWidth=".9" />
-    </>
-  ),
-  measure: (
-    <>
-      <path d="M26 28h17v7H26z" fill="#F6F1E9" stroke={S} />
-      <path d="M30 28v3.2M33.5 28v2M37 28v3.2M40.5 28v2" stroke={S} />
-      <path d="M43 26.5v10" stroke={S} strokeWidth="2" strokeLinecap="round" />
-      <rect x="5" y="14" width="23" height="23" rx="6.5" fill="var(--glow)" stroke={S} />
-      <circle cx="16.5" cy="25.5" r="5.5" fill="#F6F1E9" stroke={S} />
-      <circle cx="16.5" cy="25.5" r="1.6" fill={S} />
-    </>
-  ),
-  home: (
-    <>
-      <path d="M8 22 24 9l16 13v18H8z" fill="#F6F1E9" stroke={S} />
-      <path d="M4.5 24 24 8l19.5 16" stroke={S} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <rect x="13" y="24" width="9" height="7.5" rx="1" fill="var(--glow)" stroke={S} />
-      <path d="M17.5 24v7.5M13 27.8h9" stroke={S} strokeWidth=".8" />
-      <path d="M27 40V28.5a1.5 1.5 0 0 1 1.5-1.5h5a1.5 1.5 0 0 1 1.5 1.5V40z" fill="var(--wood)" stroke={S} />
-    </>
-  ),
-  chair: (
-    <>
-      <path d="M13 23v-7.5a4.5 4.5 0 0 1 4.5-4.5h13a4.5 4.5 0 0 1 4.5 4.5V23z" fill="var(--glow)" stroke={S} />
-      <path d="M9.5 21.5a3.5 3.5 0 0 1 3.5 3.5v2h22v-2a3.5 3.5 0 1 1 7 0v10H6V25a3.5 3.5 0 0 1 3.5-3.5z" fill="var(--wood)" stroke={S} />
-      <rect x="13" y="27" width="22" height="5" rx="2" fill="#F6F1E9" stroke={S} />
-      <path d="M10 35.5v5M38 35.5v5" stroke={S} strokeWidth="2" strokeLinecap="round" />
-    </>
-  ),
-  key: (
-    <>
-      <path d="M21.5 26.5 39 9" stroke={S} strokeWidth="4.5" strokeLinecap="round" />
-      <path d="M21.5 26.5 39 9" stroke="var(--glow)" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M34 14l4.2 4.2M30 18l3.2 3.2" stroke={S} strokeWidth="3.4" strokeLinecap="round" />
-      <circle cx="15" cy="32" r="9" fill="var(--glow)" stroke={S} />
-      <circle cx="15" cy="32" r="3.4" fill="#F6F1E9" stroke={S} />
-    </>
-  ),
-};
-
-export function Illustration({ name, title, ...props }: Props & { name: IconName }) {
-  return (
-    <svg viewBox="0 0 48 48" strokeWidth="1.2" strokeLinejoin="round" {...a11y(title)} {...props}>
-      {ART[name] ?? ART.home}
     </svg>
   );
 }

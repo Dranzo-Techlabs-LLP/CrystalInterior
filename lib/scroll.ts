@@ -18,3 +18,10 @@ export function scrollToId(id: string) {
     window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
   }
 }
+
+/** Freeze page scrolling (menu open, intro playing) and release it again. */
+export function setScrollLocked(locked: boolean) {
+  document.documentElement.classList.toggle("is-locked", locked);
+  if (locked) lenis?.stop();
+  else lenis?.start();
+}

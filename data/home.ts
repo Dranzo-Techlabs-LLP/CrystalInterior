@@ -1,7 +1,7 @@
 /**
- * Every word and image on the home page. Structure follows the reference
- * build: cinematic opening → studio intro → what's included + booking →
- * photo collage → approach → reviews beside a moving image → closing.
+ * Every word and image on the home page: cinematic opening → studio intro →
+ * rooms marquee → what's included + booking → the material palette (3D) →
+ * photo collage → approach (3D room) → reviews beside a moving image → closing.
  *
  * Business: interior design studio in Bengaluru.
  * Audience: homeowners with a new apartment or villa who want a fully designed
@@ -17,19 +17,10 @@ const IMG = {
   bedroom: "1789132782848-74945d8699a8",
 };
 
-export type IconName =
-  | "plan"
-  | "chair"
-  | "pendant"
-  | "vase"
-  | "key"
-  | "home"
-  | "materials"
-  | "light"
-  | "measure";
+export type IconName = "plan" | "chair" | "pendant" | "vase" | "key" | "home";
 
 export const hero = {
-  eyebrow: "Bespoke interior design, Bengaluru",
+  eyebrow: "Interior design studio · Bengaluru",
   title: ["Spaces that feel", "like home."],
   lead: "Full homes designed around the way you live, from the first sketch to the day you move in.",
   cta: { label: "Plan your home", target: "book" },
@@ -37,16 +28,31 @@ export const hero = {
   explore: { label: "Explore our homes", target: "homes" },
   /** Scroll-scrubbed film frames rendered by /film (Remotion). */
   film: { base: "/film/walk-in" },
+  /** Where each shot of the film begins (film progress, 0–1), shown as chapters under the film. */
+  chapters: [
+    { at: 0, label: "The approach" },
+    { at: 0.4, label: "The hall" },
+    { at: 0.72, label: "The living room" },
+  ],
 };
 
 export const intro = {
   eyebrow: "Your home, considered",
-  title: "The Crystal Interiors",
+  title: "Crystal Interio",
   lead: "An interior design studio in Bengaluru, shaping calm, crafted homes for families who would rather live in them than manage a renovation.",
   highlights: [
     { icon: "home" as IconName, label: "Full-home interiors" },
     { icon: "chair" as IconName, label: "Furniture made to measure" },
     { icon: "key" as IconName, label: "One team, sketch to keys" },
+  ],
+};
+
+/** The two crossing bands under the intro: the rooms we design, and the homes they are in. */
+export const marquee = {
+  label: "Rooms and homes we design",
+  rows: [
+    ["Living rooms", "Kitchens", "Bedrooms", "Wardrobes", "Dining rooms", "Studies"],
+    ["Villas", "Apartments", "Penthouses", "Independent houses", "Turnkey interiors"],
   ],
 };
 
@@ -89,6 +95,38 @@ export const booking = {
   size: { min: 1, max: 6, initial: 3 },
   button: "Request consultation",
   note: "This opens your email app with the details filled in, ready to send.",
+};
+
+/**
+ * The palette: material samples that assemble into a moodboard in 3D as the
+ * section scrolls (components/three/Materials.tsx). The order here is the
+ * order they land on the table; `tone` is the swatch colour in the list.
+ */
+export const materials = {
+  eyebrow: "The palette",
+  title: ["Materials,", "hand-picked."],
+  lead: "Every home starts on the studio table: stone, wood, metal and cloth, sampled in your light before anything is built.",
+  items: [
+    { key: "marquina", name: "Nero Marquina", kind: "Marble", tone: "#16161a" },
+    { key: "calacatta", name: "Calacatta arch", kind: "Marble", tone: "#ece8e0" },
+    { key: "walnut", name: "Fluted walnut", kind: "Joinery", tone: "#6b4431" },
+    { key: "terrazzo", name: "Terrazzo", kind: "Flooring", tone: "#d8cfbf" },
+    { key: "linen", name: "Washed linen", kind: "Drapery", tone: "#e6ddcc" },
+    { key: "velvet", name: "Saffron velvet", kind: "Upholstery", tone: "#ffcb04" },
+    { key: "travertine", name: "Travertine", kind: "Stone", tone: "#dccbb0" },
+    { key: "brass", name: "Brushed brass", kind: "Hardware", tone: "#c9a55b" },
+    { key: "cane", name: "Rattan cane", kind: "Weave", tone: "#c49a62" },
+  ],
+  cta: { label: "Start with a palette", target: "book" },
+  /** The scene's first frame (wide and upright), shown until the live 3D is drawing. */
+  placeholder: { wide: "/three/materials-air.jpg", tall: "/three/materials-air-m.jpg" },
+  /** The finished moodboard, shown in place of the live 3D scene when motion is reduced. */
+  still: {
+    src: "/three/materials.jpg",
+    width: 1600,
+    height: 1000,
+    alt: "Material samples laid out on a dark table: black and white marble, fluted walnut, terrazzo, linen, saffron velvet, travertine with a brass disc, and rattan cane",
+  },
 };
 
 export type CollageItem = {
@@ -163,7 +201,7 @@ export const approach = {
       key: "material",
       kicker: "Material",
       title: "Honest materials.",
-      body: "Walnut, travertine, linen and brass, chosen to age beautifully, not to impress for a season.",
+      body: "Oak, marble, linen and brass, chosen to age beautifully, not to impress for a season.",
     },
     {
       key: "light",
@@ -179,12 +217,14 @@ export const approach = {
     },
   ],
   cta: { label: "Book a consultation", target: "book" },
+  /** The model's first frame (wide and upright), shown until the live 3D is drawing. */
+  placeholder: { wide: "/three/room-plan.jpg", tall: "/three/room-plan-m.jpg" },
   /** The finished room, shown in place of the live 3D model when motion is reduced. */
   still: {
     src: "/three/room.jpg",
     width: 1600,
     height: 1000,
-    alt: "A model of a living room at dusk: a walnut slatted wall behind a linen sofa, a travertine floor, a glowing jaali screen and warm lamps",
+    alt: "A model of a living room at dusk: an ebonised oak slatted wall behind a linen sofa, a saffron velvet armchair, a black marble table on brass, a glowing jaali screen and warm lamps",
   },
 };
 

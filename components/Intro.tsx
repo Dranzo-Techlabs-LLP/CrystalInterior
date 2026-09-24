@@ -6,14 +6,19 @@ import { intro } from "@/data/home";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { hasWebGL, whenIdle } from "@/lib/webgl";
-import { CrystalMark, Illustration } from "./Icons";
+import { CrystalMark, Icon } from "./Icons";
+import { DecoBars } from "./Logo";
 import { gem } from "./three/store";
 
 const Crystal = dynamic(() => import("./three/Crystal"), { ssr: false });
 
 const noSubscription = () => () => {};
 
-/** The cream sheet that slides up over the last frame of the opening film. */
+/**
+ * The black sheet that slides up over the last frame of the opening film: the
+ * studio's crystal, cut in the logo's yellow, turns in 3D as the page scrolls,
+ * above the studio's promise, whose words light up as you read.
+ */
 export function Intro() {
   const section = useRef<HTMLElement>(null);
   const holder = useRef<HTMLDivElement>(null);
@@ -22,7 +27,7 @@ export function Intro() {
   const [live, setLive] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // The logo's crystal comes alive in 3D once the page is idle (a still mark otherwise).
+  // The crystal comes alive in 3D once the page is idle (a still mark otherwise).
   useEffect(() => {
     if (reduced || !webgl) return;
     return whenIdle(() => setLive(true), 2500);
@@ -67,7 +72,7 @@ export function Intro() {
   );
 
   return (
-    <section ref={section} id="intro" className="sheet intro" aria-labelledby="intro-title">
+    <section ref={section} id="intro" className="sheet intro theme-dark" aria-labelledby="intro-title">
       <div ref={holder} className="intro__gem" data-3d={ready ? "ready" : "loading"} aria-hidden>
         <CrystalMark className="intro__gem-mark" />
         {live && (
@@ -76,10 +81,11 @@ export function Intro() {
           </div>
         )}
       </div>
-      <p className="eyebrow" data-reveal>
+      <p className="eyebrow eyebrow--center" data-reveal>
+        <DecoBars />
         {intro.eyebrow}
       </p>
-      <h2 id="intro-title" className="intro__title" data-reveal>
+      <h2 id="intro-title" className="sr-only">
         {intro.title}
       </h2>
       <p className="intro__lead" data-reveal-text>
@@ -88,7 +94,9 @@ export function Intro() {
       <ul className="intro__highlights">
         {intro.highlights.map((h) => (
           <li key={h.label} className="intro__highlight" data-reveal>
-            <Illustration name={h.icon} className="intro__icon" />
+            <span className="intro__icon">
+              <Icon name={h.icon} />
+            </span>
             <span>{h.label}</span>
           </li>
         ))}

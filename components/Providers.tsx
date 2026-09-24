@@ -20,6 +20,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
     const lenis = new Lenis({ lerp: 0.1, smoothWheel: true, touchMultiplier: 2 });
     setLenis(lenis);
+    // the logo intro may already have locked scrolling before Lenis existed
+    if (document.documentElement.classList.contains("is-locked")) lenis.stop();
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);

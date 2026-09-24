@@ -8,6 +8,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { scrollToId } from "@/lib/scroll";
 import { hasWebGL, whenIdle } from "@/lib/webgl";
 import { Icon } from "./Icons";
+import { DecoBars } from "./Logo";
 import { ROOM_STEPS, room } from "./three/store";
 
 const loadRoom = () => import("./three/Room");
@@ -37,22 +38,31 @@ export function Approach() {
   const [live, setLive] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Fetch the 3D code once the page is idle, and mount the room shortly before it's reached.
+  // As soon as the page settles, fetch the 3D code and paint its surfaces in idle
+  // moments; mount the room three screens ahead, so it is ready when it's reached.
   useEffect(() => {
     if (reduced || !webgl || !section.current) return;
-    const cancelPrefetch = whenIdle(() => void loadRoom(), 4000);
+    let cancelPaint: (() => void) | undefined;
+    let alive = true;
+    const cancelPrefetch = whenIdle(() => {
+      loadRoom().then((m) => {
+        if (alive) cancelPaint = m.prepare();
+      });
+    }, 2000);
     let cancelMount: (() => void) | undefined;
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
-        cancelMount = whenIdle(() => setLive(true), 600);
+        cancelMount = whenIdle(() => setLive(true), 300);
       },
-      { rootMargin: "150% 0px" },
+      { rootMargin: "300% 0px" },
     );
     io.observe(section.current);
     return () => {
+      alive = false;
       cancelPrefetch();
+      cancelPaint?.();
       cancelMount?.();
       io.disconnect();
     };
@@ -98,14 +108,15 @@ export function Approach() {
           },
           0,
         );
-        // Evening falls on the whole section as the lamps come on.
+        // Evening falls on the whole section as the lamps come on: ivory turns to night navy and yellow.
         tl.to(
           section.current,
           {
-            "--build-bg": "#1b2638",
-            "--build-ink": "#fbf8f3",
-            "--build-muted": "rgba(251, 248, 243, 0.72)",
-            "--build-accent": "#e9b872",
+            "--build-bg": "#14213d",
+            "--build-ink": "#f4efe4",
+            "--build-muted": "rgba(244, 239, 228, 0.7)",
+            "--build-accent": "#ffcb04",
+            "--build-line": "rgba(244, 239, 228, 0.16)",
             duration: 0.14,
             ease: "power1.inOut",
           },
@@ -125,6 +136,10 @@ export function Approach() {
       <div ref={runway} className="build">
         <div ref={stage} className="build__stage" data-3d={!webgl ? "off" : ready ? "ready" : "loading"}>
           <div className="build__view">
+            <picture className="build__ph">
+              <source media="(max-width: 760px) and (orientation: portrait)" srcSet={approach.placeholder.tall} />
+              <img src={approach.placeholder.wide} alt="" decoding="async" />
+            </picture>
             <img
               className="build__still"
               src={approach.still.src}
@@ -142,8 +157,11 @@ export function Approach() {
           </div>
 
           <div className="build__head">
-            <p className="eyebrow">{approach.eyebrow}</p>
-            <h2 id="approach-title" className="title">
+            <p className="eyebrow">
+              <DecoBars />
+              {approach.eyebrow}
+            </p>
+            <h2 id="approach-title" className="title" data-split>
               {approach.title[0]} <em>{approach.title[1]}</em>
             </h2>
           </div>
@@ -163,12 +181,14 @@ export function Approach() {
             </ol>
             <button
               type="button"
-              className="btn btn--red build__cta"
+              className="btn btn--primary build__cta"
               data-build-cta
               onClick={() => scrollToId(approach.cta.target)}
             >
               {approach.cta.label}
-              <Icon name="arrowUpRight" className="btn__icon" />
+              <span className="btn__orb" aria-hidden>
+                <Icon name="arrowUpRight" />
+              </span>
             </button>
           </div>
 

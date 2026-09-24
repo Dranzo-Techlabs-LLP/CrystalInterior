@@ -16,7 +16,7 @@ const noSubscription = () => () => {};
 
 /**
  * A booking card in the spirit of a holiday-rental reservation panel: date and
- * home type side by side, a size stepper, and one red button. There are no
+ * home type side by side, a size stepper, and one yellow button. There are no
  * prices or availability here — the request goes to the studio by email.
  */
 export function BookingCard() {
@@ -43,7 +43,7 @@ export function BookingCard() {
   };
 
   return (
-    <form className="booking" onSubmit={submit} aria-labelledby={`${id}-title`}>
+    <form className="booking theme-dark" onSubmit={submit} aria-labelledby={`${id}-title`}>
       <h3 id={`${id}-title`} className="booking__title">
         {booking.title[0]} <em>{booking.title[1]}</em>
       </h3>
@@ -103,8 +103,11 @@ export function BookingCard() {
         </label>
       </div>
 
-      <button type="submit" className="btn btn--red btn--block">
+      <button type="submit" className="btn btn--primary btn--block">
         {booking.button}
+        <span className="btn__orb" aria-hidden>
+          <Icon name="arrowUpRight" />
+        </span>
       </button>
       <p className="booking__note" role="status">
         {sent ? "Your email app should now be open with the request ready to send." : booking.note}

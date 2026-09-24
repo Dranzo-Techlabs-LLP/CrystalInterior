@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
-import { scrollToId } from "@/lib/scroll";
 import { hero } from "@/data/home";
+import { gsap, useGSAP } from "@/lib/gsap";
+import { onIntroDone } from "@/lib/intro";
+import { scrollToId } from "@/lib/scroll";
 import { Icon } from "./Icons";
+import { DecoBars } from "./Logo";
 
 type Manifest = Record<"desktop" | "mobile", { count: number; width: number; height: number }>;
 
@@ -37,11 +39,14 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
 }
 
+const CHAPTER_ENDS = [...hero.chapters.slice(1).map((c) => c.at), 1];
+
 /**
  * The opening: a full-screen film, scrubbed by scroll. Pinned while scrolling
  * moves it from the first frame to the last; it holds when scrolling stops,
  * reverses when scrolling back, and hands over to the page after the final
- * frame. No autoplay, no looping — the visitor's scroll is the playhead.
+ * frame. No autoplay, no looping — the visitor's scroll is the playhead. The
+ * three shots are marked as chapters along the bottom.
  */
 export function HeroFilm() {
   const root = useRef<HTMLElement>(null);
@@ -49,13 +54,29 @@ export function HeroFilm() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useGSAP(
-    () => {
+    (_, contextSafe) => {
       const section = root.current;
       const stage = stageRef.current;
       const canvas = canvasRef.current;
       if (!section || !stage || !canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+
+      // the headline rises as the intro's curtain lifts (only if the intro played)
+      const enter = contextSafe!((played: boolean) => {
+        if (!played) return;
+        gsap.fromTo(
+          "[data-enter-line]",
+          { yPercent: 105, opacity: 1 },
+          { yPercent: 0, opacity: 1, duration: 1.3, ease: "expo.out", stagger: 0.12 },
+        );
+        gsap.fromTo(
+          "[data-enter]",
+          { y: 24, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1, ease: "power3.out", stagger: 0.08, delay: 0.35 },
+        );
+      });
+      const stopWaiting = onIntroDone(enter);
 
       const mm = gsap.matchMedia();
       mm.add(
@@ -136,6 +157,23 @@ export function HeroFilm() {
             })
             .catch(() => {});
 
+          // Chapters: each fills as its shot plays; the current one is marked.
+          const chapters = gsap.utils.toArray<HTMLElement>("[data-chapter]");
+          const fills = chapters.map((c) => c.querySelector<HTMLElement>("[data-fill]")!);
+          let current = -1;
+          const mark = (p: number) => {
+            let now = 0;
+            hero.chapters.forEach((c, i) => {
+              const t = gsap.utils.clamp(0, 1, (p - c.at) / (CHAPTER_ENDS[i] - c.at));
+              fills[i].style.transform = `scaleX(${t})`;
+              if (p >= c.at) now = i;
+            });
+            if (now === current) return;
+            current = now;
+            chapters.forEach((c, i) => c.toggleAttribute("data-current", i === now));
+          };
+          mark(0);
+
           // Normalised playhead: the frame count arrives with the manifest.
           // The runway is laid out in CSS (the stage is sticky), so the film
           // runs for exactly as long as the stage stays on screen.
@@ -151,8 +189,19 @@ export function HeroFilm() {
               invalidateOnRefresh: true,
             },
           });
-          tl.to(playhead, { p: 1, duration: 1, onUpdate: () => draw(frameAt()) }, 0);
-          tl.to("[data-hero-copy]", { opacity: 0, y: -48, duration: 0.1, ease: "power1.in" }, 0.01);
+          tl.to(
+            playhead,
+            {
+              p: 1,
+              duration: 1,
+              onUpdate: () => {
+                draw(frameAt());
+                mark(playhead.p);
+              },
+            },
+            0,
+          );
+          tl.to("[data-hero-copy]", { opacity: 0, y: -60, duration: 0.1, ease: "power1.in" }, 0.01);
           tl.to("[data-hero-bar]", { opacity: 0, duration: 0.06 }, 0.9);
 
           const ro = new ResizeObserver(fit);
@@ -165,12 +214,14 @@ export function HeroFilm() {
           };
         },
       );
+
+      return () => stopWaiting();
     },
     { scope: root },
   );
 
   return (
-    <section ref={root} id="top" className="hero" aria-label="Opening film: walking into a home">
+    <section ref={root} id="top" className="hero theme-dark" aria-label="Opening film: walking into a home">
       <div ref={stageRef} className="hero__stage">
         <picture className="hero__poster">
           <source media="(max-aspect-ratio: 4/5)" srcSet={`${hero.film.base}/poster-mobile.jpg`} />
@@ -184,30 +235,52 @@ export function HeroFilm() {
         <div className="hero__shade" aria-hidden />
 
         <div className="hero__copy" data-hero-copy>
-          <p className="eyebrow eyebrow--light">{hero.eyebrow}</p>
+          <p className="eyebrow" data-enter>
+            <DecoBars />
+            {hero.eyebrow}
+          </p>
           <h1 className="hero__title">
-            {hero.title[0]} <em>{hero.title[1]}</em>
+            <span className="hero__line">
+              <span data-enter-line>{hero.title[0]}</span>
+            </span>
+            <span className="hero__line">
+              <em data-enter-line>{hero.title[1]}</em>
+            </span>
           </h1>
-          <p className="hero__lead">{hero.lead}</p>
-          <div className="hero__actions">
-            <button type="button" className="btn btn--light" onClick={() => scrollToId(hero.cta.target)}>
+          <p className="hero__lead" data-enter>
+            {hero.lead}
+          </p>
+          <div className="hero__actions" data-enter>
+            <button type="button" className="btn btn--primary" onClick={() => scrollToId(hero.cta.target)}>
               {hero.cta.label}
-              <Icon name="arrowUpRight" className="btn__icon" />
+              <span className="btn__orb" aria-hidden>
+                <Icon name="arrowUpRight" />
+              </span>
+            </button>
+            <button type="button" className="btn btn--ghost hero__explore" onClick={() => scrollToId(hero.explore.target)}>
+              {hero.explore.label}
             </button>
           </div>
         </div>
 
         <div className="hero__bar" data-hero-bar>
           <span className="hero__cue">
-            <span className="hero__cue-ring" aria-hidden>
-              <Icon name="arrowDown" />
-            </span>
+            <span className="hero__cue-line" aria-hidden />
             {hero.cue}
           </span>
-          <button type="button" className="hero__explore" onClick={() => scrollToId(hero.explore.target)}>
-            {hero.explore.label}
-            <Icon name="arrowUpRight" className="btn__icon" />
-          </button>
+          <ol className="hero__chapters" aria-hidden>
+            {hero.chapters.map((c, i) => (
+              <li key={c.label} className="hero__chapter" data-chapter>
+                <span className="hero__chapter-label">
+                  <span className="hero__chapter-num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="hero__chapter-text">{c.label}</span>
+                </span>
+                <span className="hero__chapter-track">
+                  <span className="hero__chapter-fill" data-fill />
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

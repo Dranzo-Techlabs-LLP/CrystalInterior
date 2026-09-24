@@ -1,41 +1,53 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Newsreader } from "next/font/google";
+import { Bodoni_Moda, Josefin_Sans, Manrope } from "next/font/google";
+import { Cursor } from "@/components/Cursor";
+import { Preloader } from "@/components/Preloader";
 import { Providers } from "@/components/Providers";
+import { ScrollProgress } from "@/components/ScrollProgress";
 import { site } from "@/data/site";
 import "./globals.css";
 
-/** Display: an editorial serif with a beautiful italic for the accent line. */
-const display = Newsreader({
+/** Display: a Didone of the logo's Art Deco era, with an italic for the accent words. */
+const display = Bodoni_Moda({
   subsets: ["latin"],
   style: ["normal", "italic"],
   axes: ["opsz"],
   variable: "--font-display",
   display: "swap",
-  // next/font has no fallback metrics for Newsreader; Georgia is the closest system serif.
   adjustFontFallback: false,
-  fallback: ["Georgia", "Times New Roman", "serif"],
+  // (family names starting with a digit, like "Bodoni 72", would need quoting and void the whole stack)
+  fallback: ["Didot", "Georgia", "serif"],
 });
 
-/** Text and interface. */
+/** Labels and navigation: a 1920s geometric sans, spaced like the logo's "INTERIO". */
+const label = Josefin_Sans({
+  subsets: ["latin"],
+  variable: "--font-label",
+  display: "swap",
+});
+
+/** Reading text and interface. */
 const sans = Manrope({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const shareImage = "/film/walk-in/poster-desktop.jpg";
+const title = `${site.name} | Bespoke Interior Design, Bengaluru`;
+const shareImage = "/brand/og.jpg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: "The Crystal Interiors | Bespoke Interior Design",
+  title,
   description: site.description,
   keywords: [
     "interior design Bengaluru",
+    "interior designers Bangalore",
     "luxury interiors",
     "bespoke interiors",
     "full home interiors",
     "turnkey interiors",
-    "The Crystal Interiors",
+    site.name,
   ],
   alternates: { canonical: "/" },
   openGraph: {
@@ -43,13 +55,13 @@ export const metadata: Metadata = {
     locale: site.locale,
     url: site.url,
     siteName: site.name,
-    title: "The Crystal Interiors | Bespoke Interior Design",
+    title,
     description: site.description,
-    images: [{ url: shareImage, width: 1600, height: 900, alt: "A villa at dusk, its windows glowing" }],
+    images: [{ url: shareImage, width: 1200, height: 630, alt: `${site.name} logo over a villa at dusk` }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Crystal Interiors | Bespoke Interior Design",
+    title,
     description: site.description,
     images: [shareImage],
   },
@@ -57,7 +69,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1B2638",
+  themeColor: site.colors.navy,
+  colorScheme: "dark",
 };
 
 const jsonLd = {
@@ -66,19 +79,28 @@ const jsonLd = {
   name: site.name,
   description: site.description,
   url: site.url,
+  logo: `${site.url}/brand/logo-badge.png`,
+  image: `${site.url}${shareImage}`,
   email: site.contact.email,
   telephone: site.contact.phone,
   address: { "@type": "PostalAddress", addressLocality: "Bengaluru", addressCountry: "IN" },
   slogan: site.tagline,
 };
 
+/**
+ * Runs before first paint: marks JS (so the scroll runways are laid out from
+ * the start, with no shift) and whether the logo intro already played this visit.
+ */
+const boot = `(function(d){d.classList.add('js');try{if(sessionStorage.getItem('ci:intro'))d.classList.add('intro-seen')}catch(e){}})(document.documentElement)`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // The inline script adds `js` to <html> before first paint, which the hydration check would flag.
-    <html lang="en" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
+    // The inline script adds classes to <html> before first paint, which the hydration check would flag.
+    <html lang="en" className={`${display.variable} ${label.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
-        {/* Marks JS before first paint, so the film's scroll runway is laid out from the start (no shift). */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script dangerouslySetInnerHTML={{ __html: boot }} />
+        {/* the collage photographs come from Unsplash's image CDN: open the connection early */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preload" as="image" href="/film/walk-in/poster-desktop.jpg" media="(min-aspect-ratio: 4/5)" />
         <link rel="preload" as="image" href="/film/walk-in/poster-mobile.jpg" media="(max-aspect-ratio: 4/5)" />
       </head>
@@ -86,7 +108,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#intro" className="skip-link">
           Skip the opening film
         </a>
+        <Preloader />
         <Providers>{children}</Providers>
+        <ScrollProgress />
+        <Cursor />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </body>
     </html>

@@ -1,7 +1,9 @@
 import { Header } from "@/components/Header";
 import { HeroFilm } from "@/components/HeroFilm";
 import { Intro } from "@/components/Intro";
+import { Marquee } from "@/components/Marquee";
 import { Services } from "@/components/Services";
+import { Materials } from "@/components/Materials";
 import { Collage } from "@/components/Collage";
 import { Approach } from "@/components/Approach";
 import { Reviews } from "@/components/Reviews";
@@ -10,9 +12,10 @@ import { Footer } from "@/components/Footer";
 import { ScrollAnimations } from "@/components/ScrollAnimations";
 
 /**
- * The page follows the reference build: a scroll-scrubbed opening film, then a
- * cream sheet that slides over it, what's included beside a booking card, a
- * photo collage, the approach, reviews beside a moving image, and a close.
+ * A scroll-scrubbed opening film, then sheets that slide over it in the
+ * logo's black, yellow and ivory: the studio's crystal, the rooms it designs,
+ * what's included beside a booking card, the material palette assembling in
+ * 3D, a photo collage, a room that builds itself in 3D, reviews, and a close.
  */
 export default function Home() {
   return (
@@ -21,7 +24,9 @@ export default function Home() {
       <main>
         <HeroFilm />
         <Intro />
+        <Marquee />
         <Services />
+        <Materials />
         <Collage />
         <Approach />
         <Reviews />

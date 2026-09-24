@@ -4,11 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { collage } from "@/data/home";
 import { clsx } from "@/lib/clsx";
 import { Icon } from "./Icons";
+import { DecoBars } from "./Logo";
 
 /**
- * A photo collage of one home from several angles. Any photo opens in a
- * rounded lightbox (native <dialog>: focus is trapped, Escape closes, focus
- * returns to the photo you opened); arrow keys move between photos.
+ * A photo collage of one home from several angles. The photos drift gently
+ * inside their frames as the page scrolls. Any photo opens in a lightbox
+ * (native <dialog>: focus is trapped, Escape closes, focus returns to the
+ * photo you opened); arrow keys move between photos.
  */
 export function Collage() {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -38,14 +40,15 @@ export function Collage() {
   }, [step]);
 
   return (
-    <section id="homes" className="section collage-section" aria-labelledby="homes-title">
+    <section id="homes" className="section collage-section theme-light" aria-labelledby="homes-title">
       <div className="collage-section__head">
         <div>
           <p className="eyebrow" data-reveal>
+            <DecoBars />
             {collage.eyebrow}
           </p>
-          <h2 id="homes-title" className="title" data-reveal>
-            {collage.title[0]} <em>{collage.title[1]}</em>
+          <h2 id="homes-title" className="title" data-split>
+            {collage.title[0]} <em className="hl">{collage.title[1]}</em>
           </h2>
         </div>
         <p className="collage-section__note" data-reveal>
@@ -56,9 +59,14 @@ export function Collage() {
       <ul className="collage">
         {items.map((it, i) => (
           <li key={it.id} className={clsx("collage__item", `collage__item--${i}`)} data-reveal>
-            <button type="button" className="collage__button" onClick={() => open(i)}>
-              <img src={it.src} alt={it.alt} loading="lazy" decoding="async" className="collage__img" />
-              <span className="collage__caption">{it.caption}</span>
+            <button type="button" className="collage__button" onClick={() => open(i)} data-cursor="view">
+              <span className="collage__media">
+                <img src={it.src} alt={it.alt} loading="lazy" decoding="async" className="collage__img" data-parallax />
+              </span>
+              <span className="collage__caption">
+                <span className="collage__num">{String(i + 1).padStart(2, "0")}</span>
+                {it.caption}
+              </span>
               <span className="collage__expand" aria-hidden>
                 <Icon name="expand" />
               </span>

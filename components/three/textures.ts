@@ -1,8 +1,12 @@
 import * as THREE from "three";
+import { whenIdle } from "@/lib/webgl";
 
 /**
- * Every surface texture for the room, drawn in code on 2D canvases: nothing to
- * download, and the same seeded grain on every visit.
+ * Every surface texture for the 3D scenes, drawn in code on 2D canvases:
+ * nothing to download, and the same seeded grain on every visit. Painting is
+ * the slow part of setting a scene up, so it can be done ahead of time, one
+ * surface per idle moment (`prepareTextures`), and is then only wrapped when
+ * the scene mounts.
  */
 
 function random(seed: number) {
@@ -23,6 +27,21 @@ function paint(w: number, h: number, seed: number, draw: Draw) {
   canvas.width = w;
   canvas.height = h;
   draw(canvas.getContext("2d")!, random(seed), w, h);
+  return canvas;
+}
+
+/** A surface to paint: size, seed and how. */
+type Recipe = { w: number; h: number; seed: number; draw: Draw };
+
+/** Painted surfaces, kept for the life of the page (a scene that remounts reuses them). */
+const painted = new Map<string, HTMLCanvasElement>();
+
+function paintOnce(key: string, { w, h, seed, draw }: Recipe) {
+  let canvas = painted.get(key);
+  if (!canvas) {
+    canvas = paint(w, h, seed, draw);
+    painted.set(key, canvas);
+  }
   return canvas;
 }
 
@@ -121,16 +140,19 @@ const linen: Draw = (g, r, w, h) => {
   }
 };
 
+/** An ivory wool rug with a black double border, like the rule under the logo's name. */
 const rug: Draw = (g, r, w, h) => {
-  g.fillStyle = "#d9cab3";
+  g.fillStyle = "#ece5d7";
   g.fillRect(0, 0, w, h);
   for (let i = 0; i < 9000; i++) {
-    g.fillStyle = r() < 0.5 ? `rgba(120,95,70,${r() * 0.08})` : `rgba(255,250,240,${r() * 0.1})`;
+    g.fillStyle = r() < 0.5 ? `rgba(120,105,85,${r() * 0.08})` : `rgba(255,252,245,${r() * 0.1})`;
     g.fillRect(r() * w, r() * h, 2, 1);
   }
-  g.strokeStyle = "#b39a78";
-  g.lineWidth = w * 0.018;
+  g.strokeStyle = "#141414";
+  g.lineWidth = w * 0.022;
   g.strokeRect(w * 0.06, h * 0.06, w * 0.88, h * 0.88);
+  g.lineWidth = w * 0.008;
+  g.strokeRect(w * 0.1, h * 0.1, w * 0.8, h * 0.8);
 };
 
 const plaster: Draw = (g, r, w, h) => {
@@ -182,21 +204,17 @@ const lattice: Draw = (g, _r, w, h) => {
   }
 };
 
-/** An abstract canvas for the wall: a walnut arch, a low ochre sun, a sand horizon. */
+/** An abstract canvas for the wall, in the studio's colours: a black arch, a yellow sun, a sand horizon. */
 const art: Draw = (g, r, w, h) => {
-  g.fillStyle = "#efe5d3";
+  g.fillStyle = "#f1ebdf";
   g.fillRect(0, 0, w, h);
-  g.fillStyle = "#cdb897";
+  g.fillStyle = "#d8c9ad";
   g.fillRect(0, h * 0.74, w, h * 0.26);
-  const sun = g.createRadialGradient(w * 0.64, h * 0.56, 4, w * 0.64, h * 0.56, h * 0.28);
-  sun.addColorStop(0, "rgba(206,132,66,1)");
-  sun.addColorStop(0.82, "rgba(206,132,66,0.95)");
-  sun.addColorStop(1, "rgba(206,132,66,0)");
-  g.fillStyle = sun;
+  g.fillStyle = "#ffcb04";
   g.beginPath();
-  g.arc(w * 0.64, h * 0.56, h * 0.28, 0, Math.PI * 2);
+  g.arc(w * 0.66, h * 0.52, h * 0.24, 0, Math.PI * 2);
   g.fill();
-  g.fillStyle = "#6b4431";
+  g.fillStyle = "#121212";
   g.beginPath();
   g.moveTo(w * 0.2, h);
   g.lineTo(w * 0.2, h * 0.5);
@@ -204,11 +222,173 @@ const art: Draw = (g, r, w, h) => {
   g.lineTo(w * 0.48, h);
   g.closePath();
   g.fill();
+  // three thin bars, as in the logo
+  [0.8, 0.84, 0.865].forEach((x, i) => {
+    g.fillRect(w * x, h * 0.14, w * [0.022, 0.014, 0.006][i], h * 0.56);
+  });
   for (let i = 0; i < 4000; i++) {
     g.fillStyle = `rgba(90,70,50,${r() * 0.05})`;
     g.fillRect(r() * w, r() * h, 1.5, 1.5);
   }
 };
+
+/** A marble vein: a wandering line drawn soft, then sharper, then fine, so it reads as stone and not as ink. */
+function vein(
+  g: CanvasRenderingContext2D,
+  r: () => number,
+  x: number,
+  y: number,
+  length: number,
+  angle: number,
+  width: number,
+  rgb: string,
+  alpha: number,
+) {
+  const points: [number, number][] = [[x, y]];
+  let a = angle;
+  for (let d = 0; d < length; d += 5) {
+    a += (r() - 0.5) * 0.32;
+    x += Math.cos(a) * 5;
+    y += Math.sin(a) * 5;
+    points.push([x, y]);
+  }
+  g.lineCap = "round";
+  g.lineJoin = "round";
+  for (const [lw, la] of [
+    [width * 6, alpha * 0.06],
+    [width * 2.4, alpha * 0.2],
+    [width, alpha],
+  ]) {
+    g.strokeStyle = `rgba(${rgb},${la})`;
+    g.lineWidth = lw;
+    g.beginPath();
+    points.forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
+    g.stroke();
+  }
+  return points;
+}
+
+/** Soft clouds of tone under the veins, which give polished stone its depth. */
+function clouds(g: CanvasRenderingContext2D, r: () => number, w: number, h: number, tones: string[], count: number) {
+  for (let i = 0; i < count; i++) {
+    const x = r() * w;
+    const y = r() * h;
+    const rad = 30 + r() * 120;
+    const blot = g.createRadialGradient(x, y, 0, x, y, rad);
+    const tone = tones[Math.floor(r() * tones.length)];
+    blot.addColorStop(0, `rgba(${tone},${0.1 + r() * 0.16})`);
+    blot.addColorStop(1, `rgba(${tone},0)`);
+    g.fillStyle = blot;
+    g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+}
+
+/** Nero Marquina: near-black stone with bright white veins and a fine crackle. */
+const marbleDark: Draw = (g, r, w, h) => {
+  g.fillStyle = "#111113";
+  g.fillRect(0, 0, w, h);
+  clouds(g, r, w, h, ["44,44,50", "0,0,0", "30,30,34"], 70);
+  for (let i = 0; i < 6; i++) {
+    const main = vein(g, r, -w * 0.2 + r() * w * 0.3, r() * h, w * 1.5, 0.3 + (r() - 0.5) * 0.6, 0.9 + r() * 1.4, "236,233,226", 0.9);
+    // branches leave the main veins at a slant
+    for (let b = 0; b < 3; b++) {
+      const [bx, by] = main[Math.floor(r() * main.length)];
+      vein(g, r, bx, by, 40 + r() * 140, (r() - 0.5) * 2.4, 0.5 + r() * 0.5, "226,223,216", 0.6);
+    }
+  }
+  for (let i = 0; i < 45; i++) vein(g, r, r() * w, r() * h, 20 + r() * 80, r() * Math.PI * 2, 0.4, "210,208,202", 0.28);
+};
+
+/** Calacatta: warm white stone with bold grey veins, touched with gold. */
+const marbleLight: Draw = (g, r, w, h) => {
+  g.fillStyle = "#f3f0ea";
+  g.fillRect(0, 0, w, h);
+  clouds(g, r, w, h, ["200,194,186", "255,255,255", "214,206,192"], 60);
+  for (let i = 0; i < 5; i++) {
+    const x0 = r() * w * 0.2;
+    const y0 = r() * h;
+    const angle = -0.5 + (r() - 0.5) * 0.7;
+    vein(g, r, x0, y0, w * 1.4, angle, 1.6 + r() * 2.4, "118,112,104", 0.62);
+    if (i % 2 === 0) vein(g, r, x0 + 6, y0 + 4, w * 1.2, angle, 0.8, "196,160,92", 0.55);
+  }
+  for (let i = 0; i < 40; i++) vein(g, r, r() * w, r() * h, 20 + r() * 90, r() * Math.PI * 2, 0.45, "150,144,136", 0.3);
+};
+
+/** Terrazzo: marble chips in black, grey, white, rust and a little of the brand yellow, set in a pale ground. */
+const terrazzo: Draw = (g, r, w, h) => {
+  g.fillStyle = "#e3dccf";
+  g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 5000; i++) {
+    g.fillStyle = `rgba(120,110,95,${r() * 0.12})`;
+    g.fillRect(r() * w, r() * h, 1.5, 1.5);
+  }
+  const chips: [string, number][] = [
+    ["#1a1a1c", 0.3],
+    ["#8f877b", 0.24],
+    ["#faf7f0", 0.2],
+    ["#ffcb04", 0.1],
+    ["#b0623a", 0.1],
+    ["#7d8a6a", 0.06],
+  ];
+  const pick = () => {
+    let t = r();
+    for (const [c, p] of chips) {
+      if ((t -= p) <= 0) return c;
+    }
+    return chips[0][0];
+  };
+  for (let i = 0; i < 700; i++) {
+    const size = 2 + r() ** 2.2 * 22;
+    const x = r() * w;
+    const y = r() * h;
+    const sides = 5 + Math.floor(r() * 3);
+    const turn = r() * Math.PI;
+    g.fillStyle = pick();
+    g.beginPath();
+    for (let k = 0; k < sides; k++) {
+      const a = turn + (k / sides) * Math.PI * 2;
+      const rad = size * (0.55 + r() * 0.45);
+      const px = x + Math.cos(a) * rad;
+      const py = y + Math.sin(a) * rad * (0.7 + r() * 0.3);
+      if (k) g.lineTo(px, py);
+      else g.moveTo(px, py);
+    }
+    g.closePath();
+    g.fill();
+  }
+};
+
+/**
+ * Rattan cane webbing: pairs of vertical and horizontal strands with two
+ * diagonals through every crossing, leaving octagonal holes. `holes` draws the
+ * alpha map (white strands, black holes); otherwise the honey-coloured strands.
+ */
+function cane(holes: boolean): Draw {
+  return (g, r, w, h) => {
+    const cell = w / 8;
+    g.fillStyle = holes ? "#000" : "#7a5a33";
+    g.fillRect(0, 0, w, h);
+    const strand = (x0: number, y0: number, x1: number, y1: number, width: number) => {
+      g.lineWidth = width;
+      g.strokeStyle = holes ? "#fff" : `rgb(${196 + r() * 20},${152 + r() * 18},${96 + r() * 16})`;
+      g.beginPath();
+      g.moveTo(x0, y0);
+      g.lineTo(x1, y1);
+      g.stroke();
+    };
+    for (let k = 0; k <= 8; k++) {
+      const at = k * cell;
+      for (const off of [-cell * 0.09, cell * 0.09]) {
+        strand(at + off, 0, at + off, h, cell * 0.12);
+        strand(0, at + off, w, at + off, cell * 0.12);
+      }
+    }
+    for (let k = -8; k <= 16; k++) {
+      strand(k * cell, 0, k * cell + h, h, cell * 0.13);
+      strand(k * cell, 0, k * cell - h, h, cell * 0.13);
+    }
+  };
+}
 
 /**
  * White in the middle fading to black, on an opaque canvas: an additive glow as
@@ -231,30 +411,100 @@ const radial: Draw = (g, _r, w, h) => {
   g.fillRect(0, 0, w, h);
 };
 
+const ROOM = {
+  walnut: { w: 512, h: 512, seed: 11, draw: walnut },
+  floor: { w: 1024, h: 1024, seed: 21, draw: tiles },
+  slab: { w: 512, h: 512, seed: 23, draw: slab },
+  linen: { w: 256, h: 256, seed: 31, draw: linen },
+  rug: { w: 512, h: 512, seed: 37, draw: rug },
+  plaster: { w: 256, h: 256, seed: 41, draw: plaster },
+  lattice: { w: 512, h: 512, seed: 43, draw: lattice },
+  art: { w: 640, h: 460, seed: 47, draw: art },
+  marbleDark: { w: 512, h: 512, seed: 53, draw: marbleDark },
+  marbleLight: { w: 512, h: 512, seed: 59, draw: marbleLight },
+  glow: { w: 128, h: 128, seed: 1, draw: radial },
+} satisfies Record<string, Recipe>;
+
+const BOARD = {
+  marbleDark: { w: 1024, h: 1024, seed: 61, draw: marbleDark },
+  marbleLight: { w: 1024, h: 1024, seed: 67, draw: marbleLight },
+  walnut: { w: 512, h: 512, seed: 71, draw: walnut },
+  terrazzo: { w: 1024, h: 1024, seed: 73, draw: terrazzo },
+  linen: { w: 256, h: 256, seed: 79, draw: linen },
+  travertine: { w: 512, h: 512, seed: 83, draw: slab },
+  cane: { w: 512, h: 512, seed: 89, draw: cane(false) },
+  caneHoles: { w: 512, h: 512, seed: 89, draw: cane(true) },
+  glow: { w: 256, h: 256, seed: 1, draw: radial },
+} satisfies Record<string, Recipe>;
+
+const SETS = { room: ROOM, board: BOARD } as const;
+
+/**
+ * Paint a scene's surfaces ahead of time, one per idle moment, so the scene is
+ * quick to mount and scrolling never stalls on it. Returns a cancel function.
+ */
+export function prepareTextures(set: keyof typeof SETS) {
+  const queue = Object.entries(SETS[set]).filter(([key]) => !painted.has(`${set}:${key}`));
+  let cancel = () => {};
+  const next = () => {
+    const job = queue.shift();
+    if (!job) return;
+    cancel = whenIdle(() => {
+      paintOnce(`${set}:${job[0]}`, job[1]);
+      next();
+    }, 800);
+  };
+  next();
+  return () => cancel();
+}
+
+const surface = (set: keyof typeof SETS, key: string) =>
+  paintOnce(`${set}:${key}`, (SETS[set] as Record<string, Recipe>)[key]);
+
+/** Every surface in the room (three/Room.tsx). */
 export function createTextures() {
+  const room = (key: keyof typeof ROOM) => surface("room", key);
   return {
-    walnut: texture(paint(512, 512, 11, walnut)),
-    floor: texture(paint(1024, 1024, 21, tiles), { repeat: [2.5, 1.875] }),
-    slab: texture(paint(512, 512, 23, slab)),
-    linen: texture(paint(256, 256, 31, linen), { repeat: [2, 2] }),
-    rug: texture(paint(512, 512, 37, rug)),
-    plaster: texture(paint(256, 256, 41, plaster), { repeat: [2, 2] }),
-    lattice: texture(paint(512, 512, 43, lattice), { color: false }),
-    art: texture(paint(640, 460, 47, art)),
-    glow: texture(paint(128, 128, 1, radial), { color: false }),
+    walnut: texture(room("walnut")),
+    floor: texture(room("floor"), { repeat: [2.5, 1.875] }),
+    slab: texture(room("slab")),
+    linen: texture(room("linen"), { repeat: [2, 2] }),
+    rug: texture(room("rug")),
+    plaster: texture(room("plaster"), { repeat: [2, 2] }),
+    lattice: texture(room("lattice"), { color: false }),
+    art: texture(room("art")),
+    marbleDark: texture(room("marbleDark")),
+    marbleLight: texture(room("marbleLight")),
+    glow: texture(room("glow"), { color: false }),
+  };
+}
+
+/** The samples on the moodboard (three/Materials.tsx). */
+export function createBoardTextures() {
+  const board = (key: keyof typeof BOARD) => surface("board", key);
+  return {
+    marbleDark: texture(board("marbleDark")),
+    marbleLight: texture(board("marbleLight")),
+    walnut: texture(board("walnut")),
+    terrazzo: texture(board("terrazzo")),
+    linen: texture(board("linen"), { repeat: [3, 3] }),
+    travertine: texture(board("travertine")),
+    cane: texture(board("cane"), { repeat: [1.5, 1.5] }),
+    caneHoles: texture(board("caneHoles"), { color: false, repeat: [1.5, 1.5] }),
+    glow: texture(board("glow"), { color: false }),
   };
 }
 
 export type RoomTextures = ReturnType<typeof createTextures>;
 
 /** Dimension labels for the plan, set in the page's own typeface. */
-export function labelTexture(text: string) {
+export function labelTexture(text: string, color = "#0b0b0c") {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
   canvas.height = 128;
   const g = canvas.getContext("2d")!;
   g.font = `600 58px ${getComputedStyle(document.body).fontFamily}`;
-  g.fillStyle = "#7a5337";
+  g.fillStyle = color;
   g.textAlign = "center";
   g.textBaseline = "middle";
   g.fillText(text, 256, 64);
