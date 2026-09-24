@@ -74,9 +74,10 @@ move into a full-screen menu (focus is kept inside it; Escape closes it).
   3D scenes. Ivory `#F4EFE4` is for reading. Tokens are at the top of
   `app/globals.css`; sections pick them up through `.theme-dark`,
   `.theme-light` and `.theme-yellow`.
-- **Type.** Bodoni Moda (display, with its italic for accent words), Josefin
-  Sans (labels and navigation, spaced like the logo's INTERIO) and Manrope
-  (reading text), all through `next/font`.
+- **Type.** Jost for headings and labels (a geometric sans in the spirit of
+  1920s Futura, the logo's era, with even strokes that stay clear on navy,
+  ivory and yellow; labels set it in spaced capitals like the logo's INTERIO),
+  and Manrope for reading text, both through `next/font`.
 - **Details from the logo.** The triple bar (`DecoBars` in `Logo.tsx`) marks
   every section label and separates the marquee's words; the double rule is the
   rug's border in the 3D room.
@@ -321,8 +322,7 @@ public/three/ the room and moodboard stills (reduced motion, no JS, no WebGL)
   render the film; the site ships the rendered frames.
 - **three.js** and **react-three-fiber:** MIT.
 - **Photographs:** Unsplash License.
-- **Fonts:** Bodoni Moda, Josefin Sans and Manrope (SIL Open Font License), via
-  `next/font`.
+- **Fonts:** Jost and Manrope (SIL Open Font License), via `next/font`.
 
 ## Previous version
 

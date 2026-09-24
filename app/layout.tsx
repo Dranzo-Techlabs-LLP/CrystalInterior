@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, Josefin_Sans, Manrope } from "next/font/google";
+import { Jost, Manrope } from "next/font/google";
 import { Cursor } from "@/components/Cursor";
 import { Preloader } from "@/components/Preloader";
 import { Providers } from "@/components/Providers";
@@ -7,22 +7,15 @@ import { ScrollProgress } from "@/components/ScrollProgress";
 import { site } from "@/data/site";
 import "./globals.css";
 
-/** Display: a Didone of the logo's Art Deco era, with an italic for the accent words. */
-const display = Bodoni_Moda({
+/**
+ * Headings and labels: a geometric sans in the spirit of 1920s Futura, the
+ * logo's Art Deco era, with even strokes that stay clear on every background
+ * (labels set it in spaced capitals, like the logo's "INTERIO").
+ */
+const display = Jost({
   subsets: ["latin"],
   style: ["normal", "italic"],
-  axes: ["opsz"],
   variable: "--font-display",
-  display: "swap",
-  adjustFontFallback: false,
-  // (family names starting with a digit, like "Bodoni 72", would need quoting and void the whole stack)
-  fallback: ["Didot", "Georgia", "serif"],
-});
-
-/** Labels and navigation: a 1920s geometric sans, spaced like the logo's "INTERIO". */
-const label = Josefin_Sans({
-  subsets: ["latin"],
-  variable: "--font-label",
   display: "swap",
 });
 
@@ -96,7 +89,7 @@ const boot = `(function(d){d.classList.add('js');try{if(sessionStorage.getItem('
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // The inline script adds classes to <html> before first paint, which the hydration check would flag.
-    <html lang="en" className={`${display.variable} ${label.variable} ${sans.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: boot }} />
         {/* the collage photographs come from Unsplash's image CDN: open the connection early */}

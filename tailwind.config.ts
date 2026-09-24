@@ -26,7 +26,7 @@ const config: Config = {
         sand: "var(--sand)",
       },
       fontFamily: {
-        display: ["var(--font-display)", "Didot", "serif"],
+        display: ["var(--font-display)", "Futura", "sans-serif"],
         label: ["var(--font-label)", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
